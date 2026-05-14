@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nueva Comanda — ComandApp</title>
+<link rel="stylesheet" href="../css/styles.css" />
+<style>
+  .mesa-info {
+    display:flex; align-items:center; gap:1rem;
+    background:var(--bg2); border:1px solid rgba(181,145,74,.18);
+    border-radius:var(--radius-lg); padding:1rem 1.4rem; margin-bottom:1.25rem;
+  }
+  .mesa-num-big {
+    font-family:'Playfair Display',serif; font-size:36px; color:var(--gold-light);
+    line-height:1; min-width:60px; text-align:center;
+  }
+
+  /* Categorías del menú */
+  .cat-tabs { display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:1rem; }
+  .cat-tab  { padding:.35rem .85rem; border-radius:20px; font-size:12px; font-weight:500;
+               cursor:pointer; border:1px solid rgba(181,145,74,.22); color:var(--muted);
+               transition:all .15s; background:transparent; }
+  .cat-tab.active { background:var(--gold); color:#1a1510; border-color:var(--gold); }
+
+  /* Grid de productos */
+  .productos-grid {
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(160px,1fr));
+    gap:.75rem; margin-bottom:1.5rem;
+  }
+  .prod-card {
+    background:var(--bg2); border:1px solid rgba(181,145,74,.15);
+    border-radius:var(--radius); padding:.9rem .85rem;
+    cursor:pointer; transition:all .18s; position:relative;
+  }
+  .prod-card:hover { border-color:var(--gold); background:var(--bg3); }
+  .prod-card.en-comanda { border-color:rgba(39,174,96,.55); }
+  .prod-card.no-disp { opacity:.35; pointer-events:none; }
+  .prod-nombre { font-size:13.5px; font-weight:500; line-height:1.3; margin-bottom:.35rem; }
+  .prod-precio { font-size:13px; color:var(--gold-light); font-weight:500; }
+  .prod-cat    { font-size:10px; color:var(--muted); margin-bottom:.3rem; }
+  .prod-qty {
+    position:absolute; top:8px; right:8px;
+    background:var(--success); color:#fff;
+    border-radius:50%; width:20px; height:20px;
+    display:none; align-items:center; justify-content:center;
+    font-size:11px; font-weight:500;
+  }
+  .prod-card.en-comanda .prod-qty { display:flex; }
+
+  /* Carrito / resumen */
+  .carrito {
+    position:sticky; bottom:0; background:var(--bg);
+    border-top:1px solid rgba(181,145,74,.18);
+    padding:1rem 0 0; margin-top:auto;
+  }
+  .carrito-items { max-height:200px; overflow-y:auto; margin-bottom:.75rem; }
+  .carrito-item {
+    display:flex; align-items:center; gap:.6rem;
+    padding:.45rem .5rem; border-bottom:1px solid rgba(255,255,255,.04);
+    font-size:13px;
+  }
+  .carrito-item-nombre { flex:1; }
+  .qty-ctrl { display:flex; align-items:center; gap:.4rem; }
+  .qty-btn {
+    background:rgba(181,145,74,.18); border:none; color:var(--gold-light);
+    width:24px; height:24px; border-radius:50%; cursor:pointer;
+    font-size:15px; display:flex; align-items:center; justify-content:center;
+    transition:background .15s;
+  }
+  .qty-btn:hover { background:rgba(181,145,74,.35); }
+  .qty-num { font-weight:500; min-width:18px; text-align:center; }
+  .carrito-total {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:.5rem 0; border-top:1px solid rgba(181,145,74,.2);
+  }
+  .total-label { font-size:13px; color:var(--muted); }
+  .total-num { font-family:'Playfair Display',serif; font-size:22px; color:var(--gold-light); }
+  .carrito-empty { text-align:center; padding:1.5rem; color:var(--muted); font-size:13px; }
+</style>
+</head>
+<body class="page-wrapper">
+
+<header class="topbar">
+  <a class="topbar-logo" href="mesas.html"><div class="topbar-icon">🍽️</div> ComandApp</a>
+  <div class="topbar-sep"></div>
+  <div class="topbar-user">Hola, <strong id="topbar-name"></strong></div>
+  <div class="topbar-avatar" id="topbar-avatar">M</div>
+  <span class="topbar-role role-mozo">Mozo</span>
+  <button class="btn-logout" onclick="logout()">Salir</button>
+</header>
+
+<div class="app-body">
+  <nav class="sidebar">
+    <div class="sidebar-label">Mozo</div>
+    <a class="nav-item" href="dashboard.html"><span class="ni">🏠</span> Inicio</a>
+    <a class="nav-item active" href="mesas.html"><span class="ni">🪑</span> Mesas</a>
+    <a class="nav-item" href="comandas-activas.html"><span class="ni">📋</span> Mis comandas</a>
+  </nav>
+
+  <main class="main" style="display:flex; flex-direction:column;">
+
+    <!-- Info de la mesa -->
+    <div class="mesa-info" id="mesa-info">
+      <div class="mesa-num-big" id="mesa-num">—</div>
+      <div>
+        <div style="font-size:13px; color:var(--muted);">Mesa seleccionada</div>
+        <div id="mesa-estado" style="font-size:13px; margin-top:.2rem;"></div>
+      </div>
+    </div>
+
+    <!-- Comandas activas de esta mesa -->
+    <div id="comandas-mesa-wrap" style="display:none;" class="card" style="margin-bottom:1rem;">
+      <div class="card-title">📋 Comandas activas en esta mesa</div>
+      <div id="comandas-mesa-list"></div>
+    </div>
+
+    <!-- Selector de categorías -->
+    <div style="font-size:13px; color:var(--muted); margin-bottom:.6rem;">Seleccioná productos para la nueva comanda:</div>
+    <div class="cat-tabs" id="cat-tabs"></div>
+
+    <!-- Grid de productos -->
+    <div class="productos-grid" id="productos-grid">
+      <div class="empty"><div class="e-icon">🍴</div><p>Cargando menú...</p></div>
+    </div>
+
+    <!-- Observaciones -->
+    <div class="form-group" style="margin-bottom:1rem;">
+      <label>Observaciones de la comanda (opcional)</label>
+      <textarea id="obs" placeholder="Ej: Sin cebolla en la mesa 3, alergia al maní..."></textarea>
+    </div>
+
+    <!-- Carrito sticky -->
+    <div class="carrito">
+      <div class="card-title" style="margin-bottom:.75rem;">🛒 Comanda actual</div>
+      <div class="carrito-items" id="carrito-items">
+        <div class="carrito-empty">Tocá un producto para agregarlo</div>
+      </div>
+      <div class="carrito-total">
+        <span class="total-label">Total estimado:</span>
+        <span class="total-num" id="total">$0.00</span>
+      </div>
+      <div class="form-actions" style="margin-top:.75rem;">
+        <button class="btn btn-gold btn-lg" style="flex:1;" onclick="enviarComanda()">
+          📤 Enviar comanda a cocina
+        </button>
+        <button class="btn btn-outline" onclick="limpiarCarrito()">↺ Limpiar</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="../js/api.js"></script>
+<script>
+requireAuth(['mozo']); setupTopbar();
+
+// Lee el ID de mesa desde la URL (?mesa=3)
+const mesaId  = parseInt(new URLSearchParams(window.location.search).get('mesa'));
+let _menu     = [];
+let _carrito  = {}; // { id_producto: { prod, cantidad } }
+let _catActiva = 'all';
+
+async function init() {
+  if (!mesaId) { window.location.href = 'mesas.html'; return; }
+
+  try {
+    // Datos de la mesa
+    const mesa = await apiFetch('/mesas/' + mesaId);
+    document.getElementById('mesa-num').textContent   = 'Mesa ' + mesa.numero;
+    document.getElementById('mesa-estado').innerHTML  = estadoBadge(mesa.estado);
+
+    // Comandas activas de esta mesa
+    const cActivas = await apiFetch('/comandas/mesa/' + mesaId);
+    if (cActivas.length) {
+      document.getElementById('comandas-mesa-wrap').style.display = 'block';
+      document.getElementById('comandas-mesa-list').innerHTML = cActivas.map(c => `
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:.5rem 0; border-bottom:1px solid rgba(255,255,255,.05);">
+          <span style="font-size:13px;">${c.items.length} ítem(s)</span>
+          ${estadoBadge(c.estado)}
+          <span style="font-size:11px; color:var(--muted);">${tiempoRelativo(c.creado_en)}</span>
+        </div>
+      `).join('');
+    }
+
+    // Menú disponible
+    _menu = await apiFetch('/menu?disponible=true');
+    const cats = ['all', ...new Set(_menu.map(p => p.categoria))];
+
+    // Tabs de categorías
+    document.getElementById('cat-tabs').innerHTML = cats.map(c => `
+      <button class="cat-tab ${c === 'all' ? 'active' : ''}" onclick="setCat('${c}')">
+        ${c === 'all' ? 'Todos' : c}
+      </button>
+    `).join('');
+
+    renderProductos();
+
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+function setCat(cat) {
+  _catActiva = cat;
+  document.querySelectorAll('.cat-tab').forEach(b => {
+    b.classList.toggle('active', b.textContent.trim() === (cat === 'all' ? 'Todos' : cat));
+  });
+  renderProductos();
+}
+
+function renderProductos() {
+  const data = _catActiva === 'all' ? _menu : _menu.filter(p => p.categoria === _catActiva);
+  document.getElementById('productos-grid').innerHTML = data.map(p => {
+    const enCarrito = _carrito[p.id];
+    return `
+      <div class="prod-card ${enCarrito ? 'en-comanda' : ''}" onclick="toggleProducto(${p.id})">
+        <div class="prod-qty">${enCarrito ? enCarrito.cantidad : 0}</div>
+        <div class="prod-cat">${p.categoria}</div>
+        <div class="prod-nombre">${p.nombre}</div>
+        <div class="prod-precio">${formatPrecio(p.precio)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleProducto(id) {
+  if (_carrito[id]) {
+    _carrito[id].cantidad++;
+  } else {
+    const prod = _menu.find(p => p.id === id);
+    _carrito[id] = { prod, cantidad: 1 };
+  }
+  renderProductos();
+  renderCarrito();
+}
+
+function cambiarCantidad(id, delta) {
+  if (!_carrito[id]) return;
+  _carrito[id].cantidad += delta;
+  if (_carrito[id].cantidad <= 0) delete _carrito[id];
+  renderProductos();
+  renderCarrito();
+}
+
+function renderCarrito() {
+  const items = Object.values(_carrito);
+  const wrap  = document.getElementById('carrito-items');
+
+  if (!items.length) {
+    wrap.innerHTML = '<div class="carrito-empty">Tocá un producto para agregarlo</div>';
+    document.getElementById('total').textContent = '$0.00';
+    return;
+  }
+
+  wrap.innerHTML = items.map(({ prod, cantidad }) => `
+    <div class="carrito-item">
+      <span class="carrito-item-nombre">${prod.nombre}</span>
+      <div class="qty-ctrl">
+        <button class="qty-btn" onclick="cambiarCantidad(${prod.id},-1)">−</button>
+        <span class="qty-num">${cantidad}</span>
+        <button class="qty-btn" onclick="cambiarCantidad(${prod.id},+1)">+</button>
+      </div>
+      <span style="font-size:12px; color:var(--gold-light); min-width:60px; text-align:right;">
+        ${formatPrecio(prod.precio * cantidad)}
+      </span>
+    </div>
+  `).join('');
+
+  const total = items.reduce((s, {prod, cantidad}) => s + prod.precio * cantidad, 0);
+  document.getElementById('total').textContent = formatPrecio(total);
+}
+
+function limpiarCarrito() {
+  _carrito = {};
+  renderProductos();
+  renderCarrito();
+}
+
+async function enviarComanda() {
+  const items = Object.values(_carrito);
+  if (!items.length) { toast('Agregá al menos un producto', 'error'); return; }
+
+  const body = {
+    id_mesa:       mesaId,
+    observaciones: document.getElementById('obs').value.trim() || null,
+    items: items.map(({ prod, cantidad }) => ({
+      id_producto: prod.id,
+      cantidad
+    }))
+  };
+
+  try {
+    await apiFetch('/comandas', { method: 'POST', body: JSON.stringify(body) });
+    toast('✓ Comanda enviada a cocina', 'success', 4000);
+    limpiarCarrito();
+    document.getElementById('obs').value = '';
+    // Vuelve a cargar las comandas activas de la mesa
+    setTimeout(() => init(), 500);
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+init();
+</script>
+</body>
+</html>

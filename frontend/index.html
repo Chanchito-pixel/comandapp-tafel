@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ComandApp — TAFEL</title>
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="login-screen">
+  <div class="login-overlay"></div>
+  <div class="login-card">
+
+    <div class="login-logo">
+      <div class="login-logo-icon">🍽️</div>
+      <div>
+        <div class="login-brand">ComandApp</div>
+        <div class="login-tagline">by TAFEL</div>
+      </div>
+    </div>
+
+    <h1 class="login-title">Inicio de Sesión</h1>
+    <p class="login-sub">Ingresá con tu número de legajo</p>
+
+    <div class="form-group">
+      <label for="inp-legajo">Número de legajo</label>
+      <div class="login-input-wrap">
+        <input id="inp-legajo" type="number" placeholder="Ej: 1" autocomplete="username" />
+        <span class="login-icon">👤</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="inp-pass">Contraseña</label>
+      <div class="login-input-wrap">
+        <input id="inp-pass" type="password" placeholder="••••••••" autocomplete="current-password" />
+        <span class="login-icon">🔒</span>
+      </div>
+    </div>
+
+    <div class="login-check">
+      <input type="checkbox" id="chk-rem" />
+      <label for="chk-rem">Recordarme</label>
+    </div>
+
+    <button class="btn btn-gold btn-block btn-lg" onclick="doLogin()">Entrar</button>
+
+    <div class="login-error" id="login-error"></div>
+
+    <p class="login-hint">Demo: legajo <strong>1</strong> · contraseña <strong>admin</strong></p>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+// Si ya hay sesión activa, redirigir directo
+const _u = getUser();
+if (_u) {
+  const dest = { owner:'owner/dashboard.html', mozo:'mozo/dashboard.html', cocina:'cocina/dashboard.html' };
+  if (dest[_u.rol]) window.location.href = dest[_u.rol];
+}
+
+document.getElementById('inp-pass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+async function doLogin() {
+  const legajo = document.getElementById('inp-legajo').value.trim();
+  const pass   = document.getElementById('inp-pass').value;
+  const err    = document.getElementById('login-error');
+  err.style.display = 'none';
+
+  if (!legajo || !pass) {
+    err.textContent = 'Completá legajo y contraseña.';
+    err.style.display = 'block';
+    return;
+  }
+
+  try {
+    const data = await apiFetch('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ legajo: Number(legajo), pass })
+    });
+
+    setSession(data.token, data.usuario);
+
+    const dest = {
+      owner:  'owner/dashboard.html',
+      mozo:   'mozo/dashboard.html',
+      cocina: 'cocina/dashboard.html'
+    };
+    window.location.href = dest[data.usuario.rol] || 'index.html';
+
+  } catch (e) {
+    err.textContent   = e.message;
+    err.style.display = 'block';
+  }
+}
+</script>
+</body>
+</html>

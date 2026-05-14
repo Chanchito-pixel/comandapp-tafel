@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mesas — ComandApp</title>
+<link rel="stylesheet" href="../css/styles.css" />
+<style>
+  .filter-bar { display:flex; gap:.5rem; margin-bottom:1.25rem; flex-wrap:wrap; }
+  .filter-bar button { transition: all .15s; }
+</style>
+</head>
+<body class="page-wrapper">
+
+<header class="topbar">
+  <a class="topbar-logo" href="dashboard.html"><div class="topbar-icon">🍽️</div> ComandApp</a>
+  <div class="topbar-sep"></div>
+  <div class="topbar-user">Hola, <strong id="topbar-name"></strong></div>
+  <div class="topbar-avatar" id="topbar-avatar">M</div>
+  <span id="topbar-role" class="topbar-role role-mozo">Mozo</span>
+  <button class="btn-logout" onclick="logout()">Salir</button>
+</header>
+
+<div class="app-body">
+  <nav class="sidebar">
+    <div class="sidebar-label">Mozo</div>
+    <a class="nav-item" href="dashboard.html"><span class="ni">🏠</span> Inicio</a>
+    <a class="nav-item active" href="mesas.html"><span class="ni">🪑</span> Mesas</a>
+    <a class="nav-item" href="comandas-activas.html"><span class="ni">📋</span> Mis comandas</a>
+  </nav>
+
+  <main class="main">
+    <div class="page-header">
+      <div><h1>Mesas</h1><p>Seleccioná una mesa para ver o cargar comandas</p></div>
+      <button class="btn btn-gold" onclick="cargar()">↺ Actualizar</button>
+    </div>
+
+    <!-- Stats rápidas -->
+    <div class="stats-row">
+      <div class="stat-card"><div class="num" id="st-total">0</div><div class="lbl">Total</div></div>
+      <div class="stat-card"><div class="num" id="st-libre">0</div><div class="lbl">Libres</div></div>
+      <div class="stat-card"><div class="num" id="st-ocup">0</div><div class="lbl">Ocupadas</div></div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filter-bar">
+      <button class="btn btn-sm btn-gold"    id="f-all"   onclick="setFiltro('all')">Todas</button>
+      <button class="btn btn-sm btn-outline" id="f-libre" onclick="setFiltro('libre')">🟢 Libres</button>
+      <button class="btn btn-sm btn-outline" id="f-ocup"  onclick="setFiltro('ocupada')">🔴 Ocupadas</button>
+    </div>
+
+    <!-- Grilla de mesas -->
+    <div class="mesas-grid" id="mesas-grid">
+      <div class="empty"><div class="e-icon">🪑</div><p>Cargando mesas...</p></div>
+    </div>
+  </main>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="../js/api.js"></script>
+<script>
+requireAuth(['mozo']); setupTopbar();
+
+let _mesas  = [];
+let _filtro = 'all';
+
+async function cargar() {
+  try {
+    _mesas = await apiFetch('/mesas');
+    renderMesas();
+    document.getElementById('st-total').textContent = _mesas.length;
+    document.getElementById('st-libre').textContent = _mesas.filter(m=>m.estado==='libre').length;
+    document.getElementById('st-ocup').textContent  = _mesas.filter(m=>m.estado==='ocupada').length;
+  } catch(e) { toast(e.message,'error'); }
+}
+
+function setFiltro(f) {
+  _filtro = f;
+  document.querySelectorAll('.filter-bar button').forEach(b => {
+    b.classList.remove('btn-gold'); b.classList.add('btn-outline');
+  });
+  document.getElementById(`f-${f === 'all' ? 'all' : f === 'libre' ? 'libre' : 'ocup'}`)
+    .classList.replace('btn-outline','btn-gold');
+  renderMesas();
+}
+
+function renderMesas() {
+  const data = _filtro === 'all' ? _mesas : _mesas.filter(m => m.estado === _filtro);
+  const grid = document.getElementById('mesas-grid');
+
+  if (!data.length) {
+    grid.innerHTML = '<div class="empty"><div class="e-icon">🪑</div><p>Sin mesas para este filtro</p></div>';
+    return;
+  }
+
+  grid.innerHTML = data.map(m => `
+    <div class="mesa-card ${m.estado}" onclick="irAMesa(${m.id}, '${m.estado}')">
+      <div class="mesa-num">${m.numero}</div>
+      <div class="mesa-cap">👤 Hasta ${m.capacidad} personas</div>
+      <div class="mesa-status">${m.estado}</div>
+    </div>
+  `).join('');
+}
+
+function irAMesa(id, estado) {
+  // Guarda la mesa seleccionada en sessionStorage y va a la página de comanda
+  sessionStorage.setItem('mesa_sel', id);
+  window.location.href = `comanda.html?mesa=${id}`;
+}
+
+cargar();
+// Recarga cada 30 segundos para mantener estados frescos
+setInterval(cargar, 30000);
+</script>
+</body>
+</html>

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cocina — ComandApp</title>
+<link rel="stylesheet" href="../css/styles.css" />
+<style>
+  /* Sonido visual de nueva comanda */
+  @keyframes entradaNueva {
+    0%   { transform:scale(1.04); border-color:rgba(230,126,34,.9); }
+    50%  { transform:scale(1); }
+    100% { transform:scale(1.04); border-color:rgba(230,126,34,.9); }
+  }
+
+  .cols-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.25rem;
+  }
+  @media(max-width: 900px) {
+    .cols-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media(max-width: 600px) {
+    .cols-grid { grid-template-columns: 1fr; }
+  }
+
+  .col-wrap {
+    background: var(--bg2);
+    border: 1px solid rgba(181,145,74,.12);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+    min-height: 200px;
+  }
+  .col-hdr {
+    display: flex; align-items: center; gap: .5rem;
+    margin-bottom: 1rem; padding-bottom: .6rem;
+    border-bottom: 1px solid rgba(181,145,74,.15);
+  }
+  .col-hdr-title { font-family:'Playfair Display',serif; font-size:15px; }
+  .col-hdr-count {
+    border-radius: 20px; padding: 2px 8px; font-size: 11px; font-weight: 500;
+  }
+
+  .comanda-card {
+    background: var(--bg); border: 1.5px solid rgba(181,145,74,.15);
+    border-radius: var(--radius); padding: 1rem;
+    margin-bottom: .75rem; transition: border-color .2s;
+  }
+  .comanda-card.nueva {
+    border-color: rgba(230,126,34,.7);
+    animation: pulse 2.5s infinite;
+  }
+  .comanda-card.lista-para {
+    border-color: rgba(52,152,219,.5);
+  }
+
+  /* Timer del pedido */
+  .timer {
+    display: inline-flex; align-items: center; gap: .3rem;
+    font-size: 11px; padding: 2px 8px; border-radius: 20px;
+    font-weight: 500;
+  }
+  .timer.ok     { background: rgba(39,174,96,.2);   color:#6fd993; }
+  .timer.warn   { background: rgba(230,126,34,.2);  color:#f0a060; }
+  .timer.late   { background: rgba(192,57,43,.22);  color:#e57373; }
+
+  /* Notif overlay cuando llega comanda nueva */
+  #notif-overlay {
+    display: none; position:fixed; top:1.5rem; left:50%; transform:translateX(-50%);
+    background: var(--warn); color:#fff; padding:.75rem 1.75rem;
+    border-radius: 30px; font-weight:500; font-size:14px;
+    z-index: 500; box-shadow: 0 4px 20px rgba(230,126,34,.5);
+    animation: slideDown .3s ease;
+  }
+  @keyframes slideDown {
+    from { opacity:0; transform:translateX(-50%) translateY(-10px); }
+    to   { opacity:1; transform:translateX(-50%) translateY(0); }
+  }
+</style>
+</head>
+<body class="page-wrapper">
+
+<header class="topbar">
+  <a class="topbar-logo" href="dashboard.html"><div class="topbar-icon">🍽️</div> ComandApp</a>
+  <div class="topbar-sep"></div>
+  <div class="topbar-user"><strong id="topbar-name"></strong></div>
+  <div class="topbar-avatar" id="topbar-avatar">C</div>
+  <span id="topbar-role" class="topbar-role role-cocina">Cocina</span>
+
+  <!-- Indicador en vivo -->
+  <span style="font-size:11px; color:var(--muted); display:flex; align-items:center; gap:.4rem;">
+    <span style="width:7px;height:7px;background:var(--success);border-radius:50%;display:inline-block;"></span>
+    En vivo
+  </span>
+
+  <button class="btn-logout" onclick="logout()">Salir</button>
+</header>
+
+<!-- Notificación flotante de nueva comanda -->
+<div id="notif-overlay">🔔 ¡Nueva comanda ingresada!</div>
+
+<main style="flex:1; padding:1.5rem; overflow-y:auto;">
+
+  <!-- Stats rápidas -->
+  <div class="stats-row" style="margin-bottom:1.5rem;">
+    <div class="stat-card"><div class="num" id="st-pend">0</div><div class="lbl">Pendientes</div></div>
+    <div class="stat-card"><div class="num" id="st-acep">0</div><div class="lbl">En preparación</div></div>
+    <div class="stat-card"><div class="num" id="st-list">0</div><div class="lbl">Listas</div></div>
+    <div class="stat-card"><div class="num" id="st-hoy">0</div><div class="lbl">Entregadas hoy</div></div>
+  </div>
+
+  <!-- Columnas kanban -->
+  <div class="cols-grid">
+
+    <!-- PENDIENTES -->
+    <div class="col-wrap">
+      <div class="col-hdr">
+        <span style="font-size:18px;">🕐</span>
+        <span class="col-hdr-title" style="color:var(--warn);">Pendientes</span>
+        <span class="col-hdr-count" id="cnt-pend"
+          style="background:rgba(230,126,34,.2); color:var(--warn);">0</span>
+      </div>
+      <div id="col-pendiente">
+        <div class="empty"><div class="e-icon" style="font-size:24px;">✓</div><p>Sin pendientes</p></div>
+      </div>
+    </div>
+
+    <!-- EN PREPARACIÓN -->
+    <div class="col-wrap">
+      <div class="col-hdr">
+        <span style="font-size:18px;">👨‍🍳</span>
+        <span class="col-hdr-title" style="color:var(--gold-light);">En preparación</span>
+        <span class="col-hdr-count" id="cnt-acep"
+          style="background:rgba(181,145,74,.2); color:var(--gold-light);">0</span>
+      </div>
+      <div id="col-aceptada">
+        <div class="empty"><div class="e-icon" style="font-size:24px;">🍳</div><p>Sin comandas</p></div>
+      </div>
+    </div>
+
+    <!-- LISTAS -->
+    <div class="col-wrap">
+      <div class="col-hdr">
+        <span style="font-size:18px;">🔔</span>
+        <span class="col-hdr-title" style="color:#74b9e7;">Listas</span>
+        <span class="col-hdr-count" id="cnt-list"
+          style="background:rgba(52,152,219,.2); color:#74b9e7;">0</span>
+      </div>
+      <div id="col-lista">
+        <div class="empty"><div class="e-icon" style="font-size:24px;">🍽️</div><p>Sin listas</p></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div id="toast" class="toast"></div>
+<script src="../js/api.js"></script>
+<script src="http://localhost:3000/socket.io/socket.io.js"></script>
+<script>
+requireAuth(['cocina']); setupTopbar();
+
+let _data = [];
+
+// ── Cargar comandas activas ───────────────────────────────
+async function cargar() {
+  try {
+    _data = await apiFetch('/comandas');
+    render();
+  } catch(e) { toast(e.message,'error'); }
+}
+
+// ── Render del tablero ────────────────────────────────────
+function render() {
+  const pend = _data.filter(c => c.estado === 'pendiente');
+  const acep = _data.filter(c => c.estado === 'aceptada');
+  const list = _data.filter(c => c.estado === 'lista');
+
+  // Actualiza contadores
+  document.getElementById('st-pend').textContent = pend.length;
+  document.getElementById('st-acep').textContent = acep.length;
+  document.getElementById('st-list').textContent = list.length;
+  document.getElementById('cnt-pend').textContent = pend.length;
+  document.getElementById('cnt-acep').textContent = acep.length;
+  document.getElementById('cnt-list').textContent = list.length;
+
+  renderCol('col-pendiente', pend, 'pendiente');
+  renderCol('col-aceptada',  acep, 'aceptada');
+  renderCol('col-lista',     list, 'lista');
+}
+
+function timerClass(fecha) {
+  const mins = Math.floor((Date.now() - new Date(fecha)) / 60000);
+  if (mins < 10) return 'ok';
+  if (mins < 20) return 'warn';
+  return 'late';
+}
+
+function minutos(fecha) {
+  return Math.floor((Date.now() - new Date(fecha)) / 60000);
+}
+
+function renderCol(colId, items, estado) {
+  const col = document.getElementById(colId);
+
+  if (!items.length) {
+    const msgs = {
+      pendiente: '<div class="empty"><div class="e-icon" style="font-size:24px;">✓</div><p>Sin pendientes</p></div>',
+      aceptada:  '<div class="empty"><div class="e-icon" style="font-size:24px;">🍳</div><p>Sin comandas</p></div>',
+      lista:     '<div class="empty"><div class="e-icon" style="font-size:24px;">🍽️</div><p>Sin listas</p></div>',
+    };
+    col.innerHTML = msgs[estado] || '';
+    return;
+  }
+
+  col.innerHTML = items.map(c => {
+    const mins   = minutos(c.creado_en);
+    const tClass = timerClass(c.creado_en);
+
+    return `
+      <div class="comanda-card ${estado === 'pendiente' ? 'nueva' : ''} ${estado === 'lista' ? 'lista-para' : ''}">
+        <div class="comanda-header">
+          <span class="comanda-mesa">Mesa ${c.mesa_numero || '—'}</span>
+          <span class="timer ${tClass}">⏱ ${mins}m</span>
+        </div>
+        <div class="comanda-mozo">🧍 ${c.mozo_nombre || '—'} ${c.mozo_apellido || ''}</div>
+
+        <div class="comanda-items" style="margin:.6rem 0;">
+          ${(c.items || []).map(i => `
+            <div class="comanda-item">
+              <span style="font-weight:500;">${i.cantidad}×</span>
+              <span style="flex:1; margin-left:.4rem;">${i.producto}</span>
+            </div>
+          `).join('')}
+        </div>
+
+        ${c.observaciones ? `<div class="comanda-obs">📝 ${c.observaciones}</div>` : ''}
+
+        <div class="comanda-actions">
+          ${estado === 'pendiente' ? `
+            <button class="btn btn-success btn-sm" onclick="cambiarEstado(${c.id},'aceptada')">
+              ✓ Aceptar
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="cambiarEstado(${c.id},'rechazada')">
+              ✕ Rechazar
+            </button>
+          ` : ''}
+          ${estado === 'aceptada' ? `
+            <button class="btn btn-info btn-sm" onclick="cambiarEstado(${c.id},'lista')">
+              🔔 Lista para entregar
+            </button>
+          ` : ''}
+          ${estado === 'lista' ? `
+            <button class="btn btn-outline btn-sm" style="font-size:11px;" onclick="cambiarEstado(${c.id},'entregada')">
+              ✓ Confirmada como entregada
+            </button>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── Cambiar estado de una comanda ─────────────────────────
+async function cambiarEstado(id, estado) {
+  const labels = { aceptada:'aceptada', rechazada:'rechazada', lista:'lista', entregada:'entregada' };
+  if (!confirm(`¿Marcar la comanda como ${labels[estado]}?`)) return;
+
+  try {
+    await apiFetch(`/comandas/${id}/estado`, {
+      method: 'PUT', body: JSON.stringify({ estado })
+    });
+
+    // Actualiza localmente sin esperar el fetch
+    if (estado === 'entregada' || estado === 'rechazada') {
+      _data = _data.filter(c => c.id !== id);
+    } else {
+      const idx = _data.findIndex(c => c.id === id);
+      if (idx !== -1) _data[idx].estado = estado;
+    }
+    render();
+
+    const msgs = {
+      aceptada:  '✓ Comanda aceptada — en preparación',
+      rechazada: '✕ Comanda rechazada',
+      lista:     '🔔 Mozo notificado — comanda lista',
+      entregada: '✓ Comanda entregada',
+    };
+    toast(msgs[estado] || 'Actualizado', estado === 'rechazada' ? 'error' : 'success');
+
+  } catch(e) { toast(e.message,'error'); }
+}
+
+// ── Socket.IO — recibe nuevas comandas en tiempo real ─────
+const socket = io('http://localhost:3000');
+socket.emit('join', 'cocina');
+
+socket.on('nueva-comanda', (comanda) => {
+  // Agrega la nueva comanda sin recargar todo
+  _data.unshift(comanda);
+  render();
+
+  // Notificación visual
+  const overlay = document.getElementById('notif-overlay');
+  overlay.style.display = 'block';
+  setTimeout(() => { overlay.style.display = 'none'; }, 4000);
+
+  toast(`🔔 Nueva comanda — Mesa ${comanda.mesa_numero || ''}`, 'info', 5000);
+});
+
+socket.on('comanda-actualizada', ({ id, estado }) => {
+  if (['entregada','rechazada'].includes(estado)) {
+    _data = _data.filter(c => c.id !== id);
+  } else {
+    const idx = _data.findIndex(c => c.id === id);
+    if (idx !== -1) _data[idx].estado = estado;
+  }
+  render();
+});
+
+socket.on('comanda-eliminada', ({ id }) => {
+  _data = _data.filter(c => c.id !== id);
+  render();
+});
+
+// ── Init ─────────────────────────────────────────────────
+cargar();
+
+// Actualiza los timers cada 60 segundos sin re-fetch
+setInterval(() => { if (_data.length) render(); }, 60000);
+</script>
+</body>
+</html>

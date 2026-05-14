@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard — ComandApp</title>
+<link rel="stylesheet" href="../css/styles.css" />
+<style>
+  .welcome { font-family:'Playfair Display',serif; font-size:32px; margin-bottom:.5rem; }
+  .welcome span { color: var(--gold-light); }
+  .menu-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem; margin-top: 2.5rem; max-width: 700px;
+  }
+  .menu-card {
+    background: var(--bg2); border: 1px solid rgba(181,145,74,.18);
+    border-radius: var(--radius-lg); padding: 2rem 1.5rem;
+    text-align: center; text-decoration: none; color: var(--text);
+    transition: all .2s; display: flex; flex-direction: column;
+    align-items: center; gap: .75rem;
+  }
+  .menu-card:hover { border-color: var(--gold); background: var(--bg3); transform: translateY(-3px); }
+  .mc-icon { font-size: 36px; }
+  .mc-label { font-family:'Playfair Display',serif; font-size: 17px; color: var(--gold-light); }
+  .mc-desc  { font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body class="page-wrapper">
+
+<header class="topbar">
+  <a class="topbar-logo" href="dashboard.html">
+    <div class="topbar-icon">🍽️</div> ComandApp
+  </a>
+  <div class="topbar-sep"></div>
+  <div class="topbar-user">Bienvenido, <strong id="topbar-name"></strong></div>
+  <div class="topbar-avatar" id="topbar-avatar">D</div>
+  <span id="topbar-role" class="topbar-role role-owner">Dueño</span>
+  <button class="btn-logout" onclick="logout()">Salir</button>
+</header>
+
+<div class="app-body">
+  <nav class="sidebar">
+    <div class="sidebar-label">Panel</div>
+    <a class="nav-item active" href="dashboard.html"><span class="ni">🏠</span> Inicio</a>
+    <a class="nav-item" href="usuarios.html"><span class="ni">👥</span> Usuarios</a>
+    <a class="nav-item" href="mesas.html"><span class="ni">🪑</span> Mesas</a>
+    <a class="nav-item" href="menu.html"><span class="ni">🍴</span> Menú</a>
+  </nav>
+
+  <main class="main">
+    <p class="welcome">¿Qué desea hacer, <span id="user-nombre">Dueño</span>?</p>
+    <p>Seleccioná una sección para administrar el restaurante.</p>
+
+    <div class="menu-grid">
+      <a class="menu-card" href="usuarios.html">
+        <div class="mc-icon">👥</div>
+        <div class="mc-label">Empleados</div>
+        <div class="mc-desc">Crear, editar y desactivar usuarios del sistema</div>
+      </a>
+      <a class="menu-card" href="mesas.html">
+        <div class="mc-icon">🪑</div>
+        <div class="mc-label">Mesas</div>
+        <div class="mc-desc">Gestionar mesas, capacidad y estados</div>
+      </a>
+      <a class="menu-card" href="menu.html">
+        <div class="mc-icon">🍴</div>
+        <div class="mc-label">Menú</div>
+        <div class="mc-desc">Productos, precios y disponibilidad</div>
+      </a>
+    </div>
+  </main>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+  const user = requireAuth(['owner']);
+  if (user) {
+    setupTopbar();
+    document.getElementById('user-nombre').textContent = user.nombre;
+  }
+</script>
+</body>
+</html>

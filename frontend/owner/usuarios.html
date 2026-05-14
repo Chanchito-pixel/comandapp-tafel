@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Usuarios — ComandApp</title>
+<link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body class="page-wrapper">
+
+<header class="topbar">
+  <a class="topbar-logo" href="dashboard.html"><div class="topbar-icon">🍽️</div> ComandApp</a>
+  <div class="topbar-sep"></div>
+  <div class="topbar-user">Bienvenido, <strong id="topbar-name"></strong></div>
+  <div class="topbar-avatar" id="topbar-avatar">D</div>
+  <span id="topbar-role" class="topbar-role"></span>
+  <button class="btn-logout" onclick="logout()">Salir</button>
+</header>
+
+<div class="app-body">
+  <nav class="sidebar">
+    <div class="sidebar-label">Panel</div>
+    <a class="nav-item" href="dashboard.html"><span class="ni">🏠</span> Inicio</a>
+    <a class="nav-item active" href="usuarios.html"><span class="ni">👥</span> Usuarios</a>
+    <a class="nav-item" href="mesas.html"><span class="ni">🪑</span> Mesas</a>
+    <a class="nav-item" href="menu.html"><span class="ni">🍴</span> Menú</a>
+  </nav>
+
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <h1>Gestión de usuarios</h1>
+        <p>Creá, editá y desactivá empleados del sistema</p>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card"><div class="num" id="stat-total">0</div><div class="lbl">Total</div></div>
+      <div class="stat-card"><div class="num" id="stat-owner">0</div><div class="lbl">Dueños</div></div>
+      <div class="stat-card"><div class="num" id="stat-mozo">0</div><div class="lbl">Mozos</div></div>
+      <div class="stat-card"><div class="num" id="stat-cocina">0</div><div class="lbl">Cocina</div></div>
+    </div>
+
+    <!-- Formulario crear -->
+    <div class="card">
+      <div class="card-title">➕ Nuevo usuario</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Nombre *</label><input id="n-nombre"   placeholder="Nombre" /></div>
+        <div class="form-group"><label>Apellido *</label><input id="n-apellido" placeholder="Apellido" /></div>
+        <div class="form-group"><label>DNI</label><input id="n-dni" placeholder="DNI" type="number" /></div>
+        <div class="form-group"><label>Teléfono</label><input id="n-tel" placeholder="Teléfono" /></div>
+        <div class="form-group"><label>Email</label><input id="n-mail" placeholder="email@ejemplo.com" type="email" /></div>
+        <div class="form-group">
+          <label>Rol *</label>
+          <select id="n-rol">
+            <option value="">— Seleccioná —</option>
+            <option value="owner">Dueño</option>
+            <option value="mozo">Mozo</option>
+            <option value="cocina">Cocina</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Contraseña *</label><input id="n-pass" type="password" placeholder="Contraseña" /></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-gold" onclick="crearUsuario()">✔ Crear</button>
+        <button class="btn btn-outline" onclick="limpiarForm()">↺ Limpiar</button>
+      </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="card">
+      <div class="card-title">👥 Empleados activos</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Legajo</th><th>Nombre</th><th>DNI</th>
+              <th>Teléfono</th><th>Email</th><th>Rol</th><th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-usuarios">
+            <tr><td colspan="7"><div class="empty"><div class="e-icon">👤</div><p>Cargando...</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal editar -->
+<div class="modal-overlay" id="modal-editar">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>✏️ Editar usuario</h2>
+      <button class="btn-close" onclick="cerrarModal()">✕</button>
+    </div>
+    <input type="hidden" id="e-id" />
+    <div class="form-grid">
+      <div class="form-group"><label>Nombre</label><input id="e-nombre" /></div>
+      <div class="form-group"><label>Apellido</label><input id="e-apellido" /></div>
+      <div class="form-group"><label>DNI</label><input id="e-dni" type="number" /></div>
+      <div class="form-group"><label>Teléfono</label><input id="e-tel" /></div>
+      <div class="form-group"><label>Email</label><input id="e-mail" type="email" /></div>
+      <div class="form-group">
+        <label>Rol</label>
+        <select id="e-rol">
+          <option value="owner">Dueño</option>
+          <option value="mozo">Mozo</option>
+          <option value="cocina">Cocina</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Nueva contraseña</label><input id="e-pass" type="password" placeholder="Dejar vacío para no cambiar" /></div>
+      <div class="form-group">
+        <label>Estado</label>
+        <select id="e-activo">
+          <option value="true">Activo</option>
+          <option value="false">Inactivo</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-actions" style="margin-top:1.1rem;">
+      <button class="btn btn-gold" onclick="guardarEdicion()">💾 Guardar</button>
+      <button class="btn btn-outline" onclick="cerrarModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="../js/api.js"></script>
+<script>
+requireAuth(['owner']);
+setupTopbar();
+
+let _cache = [];
+
+async function cargar() {
+  try {
+    _cache = await apiFetch('/usuarios');
+    renderTabla(_cache);
+    renderStats(_cache);
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+function renderStats(data) {
+  document.getElementById('stat-total').textContent  = data.length;
+  document.getElementById('stat-owner').textContent  = data.filter(u=>u.rol==='owner').length;
+  document.getElementById('stat-mozo').textContent   = data.filter(u=>u.rol==='mozo').length;
+  document.getElementById('stat-cocina').textContent = data.filter(u=>u.rol==='cocina').length;
+}
+
+function renderTabla(data) {
+  const tb = document.getElementById('tbody-usuarios');
+  if (!data.length) {
+    tb.innerHTML = '<tr><td colspan="7"><div class="empty"><div class="e-icon">👤</div><p>Sin usuarios</p></div></td></tr>';
+    return;
+  }
+  tb.innerHTML = data.map(u => `
+    <tr style="${!u.activo ? 'opacity:.45;' : ''}">
+      <td><strong>${u.id}</strong></td>
+      <td>${u.nombre} ${u.apellido}</td>
+      <td>${u.dni||'—'}</td>
+      <td>${u.telefono||'—'}</td>
+      <td>${u.mail||'—'}</td>
+      <td>${rolBadge(u.rol)}</td>
+      <td>
+        <div class="td-actions">
+          <button class="btn btn-outline btn-sm" onclick="abrirEditar(${u.id})">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="desactivar(${u.id})">${u.activo?'🗑':'↩'}</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function crearUsuario() {
+  const b = {
+    nombre:   document.getElementById('n-nombre').value.trim(),
+    apellido: document.getElementById('n-apellido').value.trim(),
+    dni:      document.getElementById('n-dni').value.trim(),
+    telefono: document.getElementById('n-tel').value.trim(),
+    mail:     document.getElementById('n-mail').value.trim(),
+    rol:      document.getElementById('n-rol').value,
+    pass:     document.getElementById('n-pass').value
+  };
+  if (!b.nombre||!b.apellido||!b.rol||!b.pass) { toast('Completá los campos obligatorios','error'); return; }
+  try {
+    await apiFetch('/usuarios', { method:'POST', body: JSON.stringify(b) });
+    limpiarForm(); await cargar();
+    toast(`Usuario ${b.nombre} creado`);
+  } catch(e) { toast(e.message,'error'); }
+}
+
+function limpiarForm() {
+  ['n-nombre','n-apellido','n-dni','n-tel','n-mail','n-rol','n-pass'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+}
+
+function abrirEditar(id) {
+  const u = _cache.find(x=>x.id===id);
+  if (!u) return;
+  document.getElementById('e-id').value      = u.id;
+  document.getElementById('e-nombre').value  = u.nombre;
+  document.getElementById('e-apellido').value= u.apellido;
+  document.getElementById('e-dni').value     = u.dni||'';
+  document.getElementById('e-tel').value     = u.telefono||'';
+  document.getElementById('e-mail').value    = u.mail||'';
+  document.getElementById('e-rol').value     = u.rol;
+  document.getElementById('e-pass').value    = '';
+  document.getElementById('e-activo').value  = String(u.activo);
+  document.getElementById('modal-editar').classList.add('open');
+}
+
+function cerrarModal() { document.getElementById('modal-editar').classList.remove('open'); }
+
+async function guardarEdicion() {
+  const id = document.getElementById('e-id').value;
+  const b  = {
+    nombre:   document.getElementById('e-nombre').value.trim(),
+    apellido: document.getElementById('e-apellido').value.trim(),
+    dni:      document.getElementById('e-dni').value.trim(),
+    telefono: document.getElementById('e-tel').value.trim(),
+    mail:     document.getElementById('e-mail').value.trim(),
+    rol:      document.getElementById('e-rol').value,
+    activo:   document.getElementById('e-activo').value === 'true'
+  };
+  const pass = document.getElementById('e-pass').value;
+  if (pass) b.pass = pass;
+  try {
+    await apiFetch('/usuarios/'+id, { method:'PUT', body: JSON.stringify(b) });
+    cerrarModal(); await cargar(); toast('Usuario actualizado');
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function desactivar(id) {
+  const u = _cache.find(x=>x.id===id);
+  if (!confirm(`¿${u.activo?'Desactivar':'Activar'} a ${u.nombre}?`)) return;
+  try {
+    await apiFetch('/usuarios/'+id, { method:'PUT', body: JSON.stringify({activo:!u.activo}) });
+    await cargar(); toast('Usuario actualizado');
+  } catch(e) { toast(e.message,'error'); }
+}
+
+document.getElementById('modal-editar').addEventListener('click', function(e) {
+  if (e.target===this) cerrarModal();
+});
+
+cargar();
+</script>
+</body>
+</html>

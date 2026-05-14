@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mesas — ComandApp</title>
+<link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body class="page-wrapper">
+<header class="topbar">
+  <a class="topbar-logo" href="dashboard.html"><div class="topbar-icon">🍽️</div> ComandApp</a>
+  <div class="topbar-sep"></div>
+  <div class="topbar-user">Bienvenido, <strong id="topbar-name"></strong></div>
+  <div class="topbar-avatar" id="topbar-avatar">D</div>
+  <span id="topbar-role" class="topbar-role"></span>
+  <button class="btn-logout" onclick="logout()">Salir</button>
+</header>
+<div class="app-body">
+  <nav class="sidebar">
+    <div class="sidebar-label">Panel</div>
+    <a class="nav-item" href="dashboard.html"><span class="ni">🏠</span> Inicio</a>
+    <a class="nav-item" href="usuarios.html"><span class="ni">👥</span> Usuarios</a>
+    <a class="nav-item active" href="mesas.html"><span class="ni">🪑</span> Mesas</a>
+    <a class="nav-item" href="menu.html"><span class="ni">🍴</span> Menú</a>
+  </nav>
+  <main class="main">
+    <div class="page-header">
+      <div><h1>Gestión de mesas</h1><p>Creá y editá las mesas del restaurante</p></div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="num" id="st-total">0</div><div class="lbl">Total</div></div>
+      <div class="stat-card"><div class="num" id="st-libre">0</div><div class="lbl">Libres</div></div>
+      <div class="stat-card"><div class="num" id="st-ocup">0</div><div class="lbl">Ocupadas</div></div>
+    </div>
+
+    <!-- Crear -->
+    <div class="card">
+      <div class="card-title">➕ Nueva mesa</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Número *</label><input id="n-numero" type="number" min="1" placeholder="Ej: 5" /></div>
+        <div class="form-group"><label>Capacidad (personas)</label><input id="n-cap" type="number" min="1" value="4" /></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-gold" onclick="crearMesa()">✔ Crear mesa</button>
+      </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="card">
+      <div class="card-title">🪑 Listado de mesas</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>N°</th><th>Capacidad</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody id="tbody-mesas">
+            <tr><td colspan="4"><div class="empty"><div class="e-icon">🪑</div><p>Cargando...</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal editar -->
+<div class="modal-overlay" id="modal-editar">
+  <div class="modal">
+    <div class="modal-header"><h2>✏️ Editar mesa</h2><button class="btn-close" onclick="cerrarModal()">✕</button></div>
+    <input type="hidden" id="e-id" />
+    <div class="form-grid">
+      <div class="form-group"><label>Número</label><input id="e-numero" type="number" /></div>
+      <div class="form-group"><label>Capacidad</label><input id="e-cap" type="number" /></div>
+      <div class="form-group">
+        <label>Estado</label>
+        <select id="e-estado">
+          <option value="libre">Libre</option>
+          <option value="ocupada">Ocupada</option>
+          <option value="reservada">Reservada</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-actions" style="margin-top:1rem;">
+      <button class="btn btn-gold" onclick="guardar()">💾 Guardar</button>
+      <button class="btn btn-outline" onclick="cerrarModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+<script src="../js/api.js"></script>
+<script>
+requireAuth(['owner']); setupTopbar();
+let _cache = [];
+
+async function cargar() {
+  try {
+    _cache = await apiFetch('/mesas');
+    const tb = document.getElementById('tbody-mesas');
+    if (!_cache.length) {
+      tb.innerHTML='<tr><td colspan="4"><div class="empty"><div class="e-icon">🪑</div><p>No hay mesas</p></div></td></tr>';
+    } else {
+      tb.innerHTML = _cache.map(m=>`
+        <tr>
+          <td><strong>Mesa ${m.numero}</strong></td>
+          <td>${m.capacidad} personas</td>
+          <td>${estadoBadge(m.estado)}</td>
+          <td><div class="td-actions">
+            <button class="btn btn-outline btn-sm" onclick="abrirEditar(${m.id})">✏️ Editar</button>
+            <button class="btn btn-danger btn-sm" onclick="eliminar(${m.id})">🗑</button>
+          </div></td>
+        </tr>`).join('');
+    }
+    document.getElementById('st-total').textContent = _cache.length;
+    document.getElementById('st-libre').textContent = _cache.filter(m=>m.estado==='libre').length;
+    document.getElementById('st-ocup').textContent  = _cache.filter(m=>m.estado==='ocupada').length;
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function crearMesa() {
+  const numero = document.getElementById('n-numero').value;
+  const cap    = document.getElementById('n-cap').value;
+  if (!numero) { toast('El número es obligatorio','error'); return; }
+  try {
+    await apiFetch('/mesas',{method:'POST',body:JSON.stringify({numero:+numero,capacidad:+cap||4})});
+    document.getElementById('n-numero').value='';
+    await cargar(); toast(`Mesa ${numero} creada`);
+  } catch(e) { toast(e.message,'error'); }
+}
+
+function abrirEditar(id) {
+  const m = _cache.find(x=>x.id===id);
+  document.getElementById('e-id').value     = m.id;
+  document.getElementById('e-numero').value = m.numero;
+  document.getElementById('e-cap').value    = m.capacidad;
+  document.getElementById('e-estado').value = m.estado;
+  document.getElementById('modal-editar').classList.add('open');
+}
+function cerrarModal() { document.getElementById('modal-editar').classList.remove('open'); }
+async function guardar() {
+  const id = document.getElementById('e-id').value;
+  const b  = {
+    numero:   +document.getElementById('e-numero').value,
+    capacidad:+document.getElementById('e-cap').value,
+    estado:   document.getElementById('e-estado').value
+  };
+  try {
+    await apiFetch('/mesas/'+id,{method:'PUT',body:JSON.stringify(b)});
+    cerrarModal(); await cargar(); toast('Mesa actualizada');
+  } catch(e) { toast(e.message,'error'); }
+}
+async function eliminar(id) {
+  const m = _cache.find(x=>x.id===id);
+  if (!confirm(`¿Eliminar Mesa ${m.numero}?`)) return;
+  try {
+    await apiFetch('/mesas/'+id,{method:'DELETE'});
+    await cargar(); toast('Mesa eliminada');
+  } catch(e) { toast(e.message,'error'); }
+}
+document.getElementById('modal-editar').addEventListener('click',function(e){if(e.target===this)cerrarModal();});
+cargar();
+</script>
+</body></html>

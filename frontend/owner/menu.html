@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Menú — ComandApp</title>
+<link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body class="page-wrapper">
+<header class="topbar">
+  <a class="topbar-logo" href="dashboard.html"><div class="topbar-icon">🍽️</div> ComandApp</a>
+  <div class="topbar-sep"></div>
+  <div class="topbar-user">Bienvenido, <strong id="topbar-name"></strong></div>
+  <div class="topbar-avatar" id="topbar-avatar">D</div>
+  <span id="topbar-role" class="topbar-role"></span>
+  <button class="btn-logout" onclick="logout()">Salir</button>
+</header>
+
+<div class="app-body">
+  <nav class="sidebar">
+    <div class="sidebar-label">Panel</div>
+    <a class="nav-item" href="dashboard.html"><span class="ni">🏠</span> Inicio</a>
+    <a class="nav-item" href="usuarios.html"><span class="ni">👥</span> Usuarios</a>
+    <a class="nav-item" href="mesas.html"><span class="ni">🪑</span> Mesas</a>
+    <a class="nav-item active" href="menu.html"><span class="ni">🍴</span> Menú</a>
+  </nav>
+
+  <main class="main">
+    <div class="page-header">
+      <div><h1>Gestión del Menú</h1><p>Productos, precios y disponibilidad</p></div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="num" id="st-total">0</div><div class="lbl">Productos</div></div>
+      <div class="stat-card"><div class="num" id="st-disp">0</div><div class="lbl">Disponibles</div></div>
+      <div class="stat-card"><div class="num" id="st-nodisp">0</div><div class="lbl">No disponibles</div></div>
+    </div>
+
+    <!-- Crear -->
+    <div class="card">
+      <div class="card-title">➕ Nuevo producto</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Nombre *</label><input id="n-nombre" placeholder="Ej: Milanesa napolitana" /></div>
+        <div class="form-group"><label>Precio *</label><input id="n-precio" type="number" min="0" step="0.01" placeholder="0.00" /></div>
+        <div class="form-group"><label>Categoría</label>
+          <select id="n-cat">
+            <option value="General">General</option>
+            <option value="Entradas">Entradas</option>
+            <option value="Platos principales">Platos principales</option>
+            <option value="Postres">Postres</option>
+            <option value="Bebidas">Bebidas</option>
+            <option value="Minutas">Minutas</option>
+          </select>
+        </div>
+        <div class="form-group form-full">
+          <label>Descripción</label>
+          <textarea id="n-desc" placeholder="Descripción opcional del producto..."></textarea>
+        </div>
+        <div class="form-group">
+          <div class="check-wrap">
+            <input type="checkbox" id="n-disp" checked />
+            <label for="n-disp">Disponible en carta</label>
+          </div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-gold" onclick="crearProducto()">✔ Crear producto</button>
+        <button class="btn btn-outline" onclick="limpiarForm()">↺ Limpiar</button>
+      </div>
+    </div>
+
+    <!-- Filtro por categoría -->
+    <div class="card" style="padding:.9rem 1.4rem; margin-bottom:0; border-bottom-left-radius:0; border-bottom-right-radius:0;">
+      <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+        <span style="font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em;">Filtrar:</span>
+        <button class="btn btn-sm btn-gold" id="filtro-all" onclick="filtrar('all')">Todos</button>
+        <div id="filtro-cats" style="display:flex; gap:.4rem; flex-wrap:wrap;"></div>
+        <div style="margin-left:auto;">
+          <input id="buscar" placeholder="🔍 Buscar producto..." style="width:220px;" oninput="renderTabla()" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="card" style="border-top-left-radius:0; border-top-right-radius:0; border-top:none;">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Disponible</th><th>Descripción</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="tbody-menu">
+            <tr><td colspan="6"><div class="empty"><div class="e-icon">🍴</div><p>Cargando...</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal editar -->
+<div class="modal-overlay" id="modal-editar">
+  <div class="modal">
+    <div class="modal-header"><h2>✏️ Editar producto</h2><button class="btn-close" onclick="cerrarModal()">✕</button></div>
+    <input type="hidden" id="e-id" />
+    <div class="form-grid">
+      <div class="form-group"><label>Nombre</label><input id="e-nombre" /></div>
+      <div class="form-group"><label>Precio</label><input id="e-precio" type="number" min="0" step="0.01" /></div>
+      <div class="form-group"><label>Categoría</label>
+        <select id="e-cat">
+          <option value="General">General</option>
+          <option value="Entradas">Entradas</option>
+          <option value="Platos principales">Platos principales</option>
+          <option value="Postres">Postres</option>
+          <option value="Bebidas">Bebidas</option>
+          <option value="Minutas">Minutas</option>
+        </select>
+      </div>
+      <div class="form-group form-full"><label>Descripción</label><textarea id="e-desc"></textarea></div>
+      <div class="form-group">
+        <div class="check-wrap">
+          <input type="checkbox" id="e-disp" />
+          <label for="e-disp">Disponible en carta</label>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions" style="margin-top:1rem;">
+      <button class="btn btn-gold" onclick="guardar()">💾 Guardar</button>
+      <button class="btn btn-outline" onclick="cerrarModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="../js/api.js"></script>
+<script>
+requireAuth(['owner']); setupTopbar();
+
+let _cache   = [];
+let _filtro  = 'all';
+
+async function cargar() {
+  try {
+    _cache = await apiFetch('/menu');
+    const cats = [...new Set(_cache.map(p => p.categoria))].sort();
+    document.getElementById('filtro-cats').innerHTML = cats.map(c =>
+      `<button class="btn btn-sm btn-outline" onclick="filtrar('${c}')" data-cat="${c}">${c}</button>`
+    ).join('');
+    renderTabla();
+    renderStats();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+function filtrar(cat) {
+  _filtro = cat;
+  document.querySelectorAll('[data-cat]').forEach(b => b.classList.remove('btn-gold'));
+  document.getElementById('filtro-all').classList.toggle('btn-gold', cat === 'all');
+  if (cat !== 'all') {
+    const btn = document.querySelector(`[data-cat="${cat}"]`);
+    if (btn) { btn.classList.remove('btn-outline'); btn.classList.add('btn-gold'); }
+  }
+  renderTabla();
+}
+
+function renderTabla() {
+  const q = (document.getElementById('buscar').value || '').toLowerCase();
+  let data = _filtro === 'all' ? _cache : _cache.filter(p => p.categoria === _filtro);
+  if (q) data = data.filter(p => p.nombre.toLowerCase().includes(q));
+
+  const tb = document.getElementById('tbody-menu');
+  if (!data.length) {
+    tb.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="e-icon">🍴</div><p>Sin productos</p></div></td></tr>';
+    return;
+  }
+  tb.innerHTML = data.map(p => `
+    <tr style="${!p.disponible ? 'opacity:.45;' : ''}">
+      <td><strong>${p.nombre}</strong></td>
+      <td><span class="badge badge-mozo">${p.categoria}</span></td>
+      <td><strong style="color:var(--gold-light)">${formatPrecio(p.precio)}</strong></td>
+      <td>
+        <button class="btn btn-sm ${p.disponible ? 'btn-success' : 'btn-outline'}" onclick="toggleDisp(${p.id})">
+          ${p.disponible ? '✓ Sí' : '✕ No'}
+        </button>
+      </td>
+      <td style="max-width:180px; font-size:12px; color:var(--muted);">${p.descripcion || '—'}</td>
+      <td>
+        <div class="td-actions">
+          <button class="btn btn-outline btn-sm" onclick="abrirEditar(${p.id})">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="eliminar(${p.id})">🗑</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderStats() {
+  document.getElementById('st-total').textContent  = _cache.length;
+  document.getElementById('st-disp').textContent   = _cache.filter(p => p.disponible).length;
+  document.getElementById('st-nodisp').textContent = _cache.filter(p => !p.disponible).length;
+}
+
+async function crearProducto() {
+  const b = {
+    nombre:     document.getElementById('n-nombre').value.trim(),
+    precio:     parseFloat(document.getElementById('n-precio').value),
+    categoria:  document.getElementById('n-cat').value,
+    descripcion:document.getElementById('n-desc').value.trim(),
+    disponible: document.getElementById('n-disp').checked
+  };
+  if (!b.nombre || isNaN(b.precio)) { toast('Nombre y precio son obligatorios', 'error'); return; }
+  try {
+    await apiFetch('/menu', { method: 'POST', body: JSON.stringify(b) });
+    limpiarForm(); await cargar(); toast(`Producto "${b.nombre}" creado`);
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+function limpiarForm() {
+  document.getElementById('n-nombre').value = '';
+  document.getElementById('n-precio').value = '';
+  document.getElementById('n-desc').value   = '';
+  document.getElementById('n-cat').value    = 'General';
+  document.getElementById('n-disp').checked = true;
+}
+
+function abrirEditar(id) {
+  const p = _cache.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('e-id').value     = p.id;
+  document.getElementById('e-nombre').value = p.nombre;
+  document.getElementById('e-precio').value = p.precio;
+  document.getElementById('e-cat').value    = p.categoria;
+  document.getElementById('e-desc').value   = p.descripcion || '';
+  document.getElementById('e-disp').checked = p.disponible;
+  document.getElementById('modal-editar').classList.add('open');
+}
+
+function cerrarModal() { document.getElementById('modal-editar').classList.remove('open'); }
+
+async function guardar() {
+  const id = document.getElementById('e-id').value;
+  const b  = {
+    nombre:     document.getElementById('e-nombre').value.trim(),
+    precio:     parseFloat(document.getElementById('e-precio').value),
+    categoria:  document.getElementById('e-cat').value,
+    descripcion:document.getElementById('e-desc').value.trim(),
+    disponible: document.getElementById('e-disp').checked
+  };
+  try {
+    await apiFetch('/menu/' + id, { method: 'PUT', body: JSON.stringify(b) });
+    cerrarModal(); await cargar(); toast('Producto actualizado');
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function toggleDisp(id) {
+  const p = _cache.find(x => x.id === id);
+  try {
+    await apiFetch('/menu/' + id, { method: 'PUT', body: JSON.stringify({ disponible: !p.disponible }) });
+    await cargar();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function eliminar(id) {
+  const p = _cache.find(x => x.id === id);
+  if (!confirm(`¿Eliminar "${p.nombre}"?`)) return;
+  try {
+    await apiFetch('/menu/' + id, { method: 'DELETE' });
+    await cargar(); toast('Producto eliminado');
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+document.getElementById('modal-editar').addEventListener('click', function(e) {
+  if (e.target === this) cerrarModal();
+});
+
+cargar();
+</script>
+</body>
+</html>
