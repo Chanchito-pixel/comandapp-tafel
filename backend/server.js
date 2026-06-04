@@ -11,6 +11,15 @@ const { Server } = require('socket.io');
 const cors       = require('cors');
 
 const app        = express();
+const path = require('path'); // Asegúrate de tener esta línea arriba con los otros require
+
+// 1. Apuntamos los archivos estáticos a la carpeta frontend
+app.use(express.static(path.join(__dirname, '../frontend'))); 
+
+// 2. Apuntamos la ruta principal al index.html que está en frontend
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+});
 const httpServer = http.createServer(app);
 
 // ── Socket.IO con soporte CORS ────────────────────────────
