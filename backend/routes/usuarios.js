@@ -3,7 +3,7 @@
 // ════════════════════════════════════════════════════════
 
 const express              = require('express');
-const bcrypt               = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const pool                 = require('../db/conexion');
 const { verificarToken, soloRoles } = require('../middleware/auth');
 
