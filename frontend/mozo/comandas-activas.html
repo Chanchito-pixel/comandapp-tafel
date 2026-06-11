@@ -92,7 +92,7 @@
 
 <div id="toast" class="toast"></div>
 <script src="../js/api.js"></script>
-<script src="http://localhost:3000/socket.io/socket.io.js"></script>
+<script src="/socket.io/socket.io.js"></script>
 <script>
 const user = requireAuth(['mozo']);
 if (user) setupTopbar();
@@ -161,7 +161,7 @@ async function marcarEntregada(id) {
 }
 
 // Socket.IO — actualiza automáticamente cuando cocina cambia el estado
-const socket = io('http://localhost:3000');
+const socket = io('https://comandapp-tafel.onrender.com');
 socket.emit('join', `mozo-${user.id}`);
 
 socket.on('comanda-actualizada', ({ id, estado }) => {

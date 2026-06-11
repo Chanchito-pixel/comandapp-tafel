@@ -4,7 +4,7 @@
    (o <script src="js/api.js"> desde la raíz)
 ════════════════════════════════════════════════════════ */
 
-const API = 'http://localhost:3000/api';
+const API = '/api';
 
 // ── Sesión ────────────────────────────────────────────────
 function getToken()  { return sessionStorage.getItem('token'); }
