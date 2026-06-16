@@ -474,3 +474,27 @@ tbody td { padding: .7rem .8rem; vertical-align: middle; }
   .big-btn-grid { grid-template-columns: 1fr; max-width: 300px; }
   .form-grid { grid-template-columns: 1fr; }
 }
+.btn-back-mobile {
+  display: none;
+  position: fixed;
+  bottom: 1.5rem;
+  left: 1rem;
+  background: var(--bg2);
+  border: 1px solid rgba(181,145,74,.30);
+  color: var(--gold-light);
+  border-radius: 25px;
+  padding: .6rem 1.2rem;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  z-index: 150;
+  box-shadow: 0 2px 12px rgba(0,0,0,.35);
+  transition: background .2s, border-color .2s;
+}
+.btn-back-mobile:hover {
+  background: var(--bg3);
+  border-color: var(--gold);
+}
+@media (max-width: 768px) {
+  .btn-back-mobile { display: block; }
+}

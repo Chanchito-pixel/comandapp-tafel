@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Platos — ComandApp</title>
+<link rel="stylesheet" href="../css/styles.css" />
+<style>
+  .platos-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:.9rem; }
+  .plato-card {
+    background:var(--bg2); border:1.5px solid rgba(181,145,74,.15);
+    border-radius:var(--radius-lg); padding:1rem 1.1rem; transition:border-color .2s;
+  }
+  .plato-card.disponible  { border-color:rgba(39,174,96,.35); }
+  .plato-card.nodisponible{ border-color:rgba(192,57,43,.35); opacity:.7; }
+  .plato-cat    { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.25rem; }
+  .plato-nombre { font-size:14px; font-weight:500; margin-bottom:.2rem; }
+  .plato-precio { font-size:13px; color:var(--gold-light); margin-bottom:.75rem; }
+  .plato-footer { display:flex; align-items:center; justify-content:space-between; }
+  .estado-label { font-size:12px; font-weight:500; }
+  .disponible   .estado-label { color:#6fd993; }
+  .nodisponible .estado-label { color:#e57373; }
+  .toggle-btn {
+    padding:.3rem .8rem; border-radius:20px; font-size:12px;
+    font-weight:500; cursor:pointer; border:none; transition:all .18s;
+  }
+  .disponible   .toggle-btn { background:rgba(192,57,43,.2); color:#e57373; }
+  .disponible   .toggle-btn:hover { background:rgba(192,57,43,.35); }
+  .nodisponible .toggle-btn { background:rgba(39,174,96,.2); color:#6fd993; }
+  .nodisponible .toggle-btn:hover { background:rgba(39,174,96,.35); }
+  .cat-tabs { display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:1rem; }
+  .cat-tab  { padding:.3rem .8rem; border-radius:20px; font-size:12px; font-weight:500;
+               cursor:pointer; border:1px solid rgba(181,145,74,.22); color:var(--muted);
+               background:transparent; transition:all .15s; }
+  .cat-tab.active { background:var(--gold); color:#1a1510; border-color:var(--gold); }
+</style>
+</head>
+<body class="page-wrapper">
+
+<header class="topbar">
+  <a class="topbar-logo" href="dashboard.html"><div class="topbar-icon">🍽️</div> ComandApp</a>
+  <div class="topbar-sep"></div>
+  <div class="topbar-user"><strong id="topbar-name"></strong></div>
+  <div class="topbar-avatar" id="topbar-avatar">C</div>
+  <span class="topbar-role role-cocina">Cocina</span>
+  <button class="btn-logout" onclick="logout()">Salir</button>
+</header>
+
+<div class="app-body">
+  <nav class="sidebar">
+    <div class="sidebar-label">Cocina</div>
+    <a class="nav-item" href="dashboard.html"><span class="ni">📋</span> Comandas</a>
+    <a class="nav-item active" href="menu.html"><span class="ni">🍴</span> Platos</a>
+  </nav>
+
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <h1>Platos del menú</h1>
+        <p>Habilitá o deshabilitá platos según disponibilidad</p>
+      </div>
+      <button class="btn btn-outline" onclick="cargar()">↺ Actualizar</button>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="num" id="st-total">0</div><div class="lbl">Total</div></div>
+      <div class="stat-card"><div class="num" id="st-disp">0</div><div class="lbl">Disponibles</div></div>
+      <div class="stat-card"><div class="num" id="st-no">0</div><div class="lbl">No disponibles</div></div>
+    </div>
+
+    <div class="cat-tabs" id="cat-tabs"></div>
+    <div class="platos-grid" id="platos-grid">
+      <div class="empty"><div class="e-icon">🍴</div><p>Cargando...</p></div>
+    </div>
+  </main>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="../js/api.js"></script>
+<script>
+requireAuth(['cocina']); setupTopbar();
+
+let _menu = []; let _cat = 'all';
+
+async function cargar() {
+  try {
+    _menu = await apiFetch('/menu');
+    const cats = ['all', ...[...new Set(_menu.map(p=>p.categoria))].sort()];
+    document.getElementById('cat-tabs').innerHTML = cats.map(c =>
+      `<button class="cat-tab ${c===_cat?'active':''}" onclick="setCat('${c}')">${c==='all'?'Todos':c}</button>`
+    ).join('');
+    renderGrid();
+    document.getElementById('st-total').textContent = _menu.length;
+    document.getElementById('st-disp').textContent  = _menu.filter(p=>p.disponible).length;
+    document.getElementById('st-no').textContent    = _menu.filter(p=>!p.disponible).length;
+  } catch(e) { toast(e.message,'error'); }
+}
+
+function setCat(cat) {
+  _cat = cat;
+  document.querySelectorAll('.cat-tab').forEach(b => b.classList.toggle('active', b.textContent === (cat==='all'?'Todos':cat)));
+  renderGrid();
+}
+
+function renderGrid() {
+  const data = _cat==='all' ? _menu : _menu.filter(p=>p.categoria===_cat);
+  const grid = document.getElementById('platos-grid');
+  if (!data.length) { grid.innerHTML='<div class="empty"><div class="e-icon">🍴</div><p>Sin platos</p></div>'; return; }
+  grid.innerHTML = data.map(p => `
+    <div class="plato-card ${p.disponible?'disponible':'nodisponible'}">
+      <div class="plato-cat">${p.categoria}</div>
+      <div class="plato-nombre">${p.nombre}</div>
+      <div class="plato-precio">${formatPrecio(p.precio)}</div>
+      ${p.descripcion ? `<div style="font-size:11px;color:var(--muted);margin-bottom:.5rem;">${p.descripcion}</div>` : ''}
+      <div class="plato-footer">
+        <span class="estado-label">${p.disponible ? '✓ Disponible' : '✕ No disponible'}</span>
+        <button class="toggle-btn" onclick="toggle(${p.id})">${p.disponible ? 'Deshabilitar' : 'Habilitar'}</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function toggle(id) {
+  const p = _menu.find(x=>x.id===id);
+  if (!p) return;
+  const nuevo = !p.disponible;
+  try {
+    await apiFetch('/menu/'+id, { method:'PUT', body: JSON.stringify({ disponible: nuevo }) });
+    p.disponible = nuevo;
+    renderGrid();
+    document.getElementById('st-disp').textContent = _menu.filter(x=>x.disponible).length;
+    document.getElementById('st-no').textContent   = _menu.filter(x=>!x.disponible).length;
+    toast(`"${p.nombre}" ${nuevo ? 'habilitado ✓' : 'deshabilitado ✕'}`, nuevo ? 'success' : 'error');
+  } catch(e) { toast(e.message,'error'); }
+}
+
+cargar();
+</script>
+</body>
+</html>

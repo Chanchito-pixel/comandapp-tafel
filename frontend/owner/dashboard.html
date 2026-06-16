@@ -1,36 +1,55 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Dashboard — ComandApp</title>
 <link rel="stylesheet" href="../css/styles.css" />
 <style>
   .welcome { font-family:'Playfair Display',serif; font-size:32px; margin-bottom:.5rem; }
-  .welcome span { color: var(--gold-light); }
+  .welcome span { color:var(--gold-light); }
   .menu-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.25rem; margin-top: 2.5rem; max-width: 700px;
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:1.1rem; margin-top:1.75rem; max-width:800px;
   }
   .menu-card {
-    background: var(--bg2); border: 1px solid rgba(181,145,74,.18);
-    border-radius: var(--radius-lg); padding: 2rem 1.5rem;
-    text-align: center; text-decoration: none; color: var(--text);
-    transition: all .2s; display: flex; flex-direction: column;
-    align-items: center; gap: .75rem;
+    background:var(--bg2); border:1px solid rgba(181,145,74,.18);
+    border-radius:var(--radius-lg); padding:1.75rem 1.25rem;
+    text-align:center; text-decoration:none; color:var(--text);
+    transition:all .2s; display:flex; flex-direction:column; align-items:center; gap:.65rem;
   }
-  .menu-card:hover { border-color: var(--gold); background: var(--bg3); transform: translateY(-3px); }
-  .mc-icon { font-size: 36px; }
-  .mc-label { font-family:'Playfair Display',serif; font-size: 17px; color: var(--gold-light); }
-  .mc-desc  { font-size: 12px; color: var(--muted); }
+  .menu-card:hover { border-color:var(--gold); background:var(--bg3); transform:translateY(-3px); }
+  .mc-icon  { font-size:34px; }
+  .mc-label { font-family:'Playfair Display',serif; font-size:16px; color:var(--gold-light); }
+  .mc-desc  { font-size:11px; color:var(--muted); }
+
+  /* Stats hoy */
+  .hoy-band {
+    margin-top:1.75rem; max-width:800px;
+    background:var(--bg2); border:1px solid rgba(181,145,74,.18);
+    border-radius:var(--radius-lg); padding:1.1rem 1.4rem;
+  }
+  .hoy-band-title {
+    font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--muted); margin-bottom:.85rem;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .hoy-band-title a { font-size:11px; color:var(--gold-light); text-decoration:none; }
+  .hoy-band-title a:hover { color:var(--gold); }
+  .hoy-nums { display:flex; gap:1.5rem; flex-wrap:wrap; align-items:center; }
+  .hoy-item .n { font-family:'Playfair Display',serif; font-size:22px; color:var(--gold-light); }
+  .hoy-item .l { font-size:11px; color:var(--muted); }
+  .hoy-sep { width:1px; height:36px; background:rgba(181,145,74,.2); }
+  .mejor-hoy {
+    margin-top:.75rem; font-size:12px; color:var(--muted);
+    border-top:1px solid rgba(181,145,74,.12); padding-top:.65rem;
+  }
+  .mejor-hoy strong { color:var(--text); }
 </style>
 </head>
 <body class="page-wrapper">
 
 <header class="topbar">
-  <a class="topbar-logo" href="dashboard.html">
-    <div class="topbar-icon">🍽️</div> ComandApp
-  </a>
+  <a class="topbar-logo" href="dashboard.html"><div class="topbar-icon">🍽️</div> ComandApp</a>
   <div class="topbar-sep"></div>
   <div class="topbar-user">Bienvenido, <strong id="topbar-name"></strong></div>
   <div class="topbar-avatar" id="topbar-avatar">D</div>
@@ -45,6 +64,7 @@
     <a class="nav-item" href="usuarios.html"><span class="ni">👥</span> Usuarios</a>
     <a class="nav-item" href="mesas.html"><span class="ni">🪑</span> Mesas</a>
     <a class="nav-item" href="menu.html"><span class="ni">🍴</span> Menú</a>
+    <a class="nav-item" href="comandas.html"><span class="ni">📊</span> Comandas</a>
   </nav>
 
   <main class="main">
@@ -55,29 +75,83 @@
       <a class="menu-card" href="usuarios.html">
         <div class="mc-icon">👥</div>
         <div class="mc-label">Empleados</div>
-        <div class="mc-desc">Crear, editar y desactivar usuarios del sistema</div>
+        <div class="mc-desc">Crear, editar y desactivar usuarios</div>
       </a>
       <a class="menu-card" href="mesas.html">
         <div class="mc-icon">🪑</div>
         <div class="mc-label">Mesas</div>
-        <div class="mc-desc">Gestionar mesas, capacidad y estados</div>
+        <div class="mc-desc">Gestionar mesas y estados</div>
       </a>
       <a class="menu-card" href="menu.html">
         <div class="mc-icon">🍴</div>
         <div class="mc-label">Menú</div>
         <div class="mc-desc">Productos, precios y disponibilidad</div>
       </a>
+      <a class="menu-card" href="comandas.html">
+        <div class="mc-icon">📊</div>
+        <div class="mc-label">Comandas</div>
+        <div class="mc-desc">Estadísticas y seguimiento</div>
+      </a>
+    </div>
+
+    <!-- Banda de stats de hoy -->
+    <div class="hoy-band">
+      <div class="hoy-band-title">
+        <span>📊 Resumen de hoy</span>
+        <a href="comandas.html">Ver detalle completo →</a>
+      </div>
+      <div class="hoy-nums">
+        <div class="hoy-item">
+          <div class="n" id="hoy-monto">—</div>
+          <div class="l">Facturado</div>
+        </div>
+        <div class="hoy-sep"></div>
+        <div class="hoy-item">
+          <div class="n" id="hoy-entregadas">—</div>
+          <div class="l">Entregadas</div>
+        </div>
+        <div class="hoy-sep"></div>
+        <div class="hoy-item">
+          <div class="n" id="hoy-activas">—</div>
+          <div class="l">Activas ahora</div>
+        </div>
+        <div class="hoy-sep"></div>
+        <div class="hoy-item">
+          <div class="n" id="hoy-rechazadas" style="color:#e57373;">—</div>
+          <div class="l">Rechazadas</div>
+        </div>
+      </div>
+      <div class="mejor-hoy" id="mejor-hoy" style="display:none;">
+        🏆 Mejor empleado hoy: <strong id="mejor-nombre">—</strong> — <span id="mejor-sub"></span>
+      </div>
     </div>
   </main>
 </div>
 
+<div id="toast" class="toast"></div>
 <script src="../js/api.js"></script>
 <script>
-  const user = requireAuth(['owner']);
-  if (user) {
-    setupTopbar();
-    document.getElementById('user-nombre').textContent = user.nombre;
-  }
+const user = requireAuth(['owner']);
+if (user) {
+  setupTopbar();
+  document.getElementById('user-nombre').textContent = user.nombre;
+  cargarStats();
+}
+
+async function cargarStats() {
+  try {
+    const s = await apiFetch('/comandas/stats/hoy');
+    document.getElementById('hoy-monto').textContent      = formatPrecio(s.monto_total);
+    document.getElementById('hoy-entregadas').textContent = s.entregadas;
+    document.getElementById('hoy-activas').textContent    = s.activas;
+    document.getElementById('hoy-rechazadas').textContent = s.rechazadas;
+    if (s.mejor_empleado) {
+      document.getElementById('mejor-nombre').textContent = `${s.mejor_empleado.nombre} ${s.mejor_empleado.apellido}`;
+      document.getElementById('mejor-sub').textContent    = `${s.mejor_empleado.total} comanda(s)`;
+      document.getElementById('mejor-hoy').style.display  = 'block';
+    }
+  } catch(e) { /* silencioso en dashboard */ }
+}
 </script>
 </body>
 </html>

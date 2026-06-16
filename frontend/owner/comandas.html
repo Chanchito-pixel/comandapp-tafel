@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Comandas — ComandApp</title>
+<link rel="stylesheet" href="../css/styles.css" />
+<style>
+  /* ── Tabs de sección ── */
+  .section-tabs {
+    display:flex; gap:.5rem; margin-bottom:1.5rem;
+    border-bottom:1px solid rgba(181,145,74,.15); padding-bottom:0;
+  }
+  .stab {
+    padding:.6rem 1.1rem; font-size:13.5px; font-weight:500;
+    cursor:pointer; border:none; background:transparent;
+    color:var(--muted); border-bottom:2px solid transparent;
+    margin-bottom:-1px; transition:all .18s;
+  }
+  .stab.active { color:var(--gold-light); border-bottom-color:var(--gold); }
+  .stab:hover  { color:var(--text); }
+
+  .section { display:none; }
+  .section.active { display:block; }
+
+  /* ── Stats hoy ── */
+  .big-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:1rem; margin-bottom:1.5rem; }
+  .big-stat {
+    background:var(--bg2); border:1px solid rgba(181,145,74,.15);
+    border-radius:var(--radius-lg); padding:1.1rem 1.3rem;
+  }
+  .big-stat.destacado { border-color:rgba(181,145,74,.38); }
+  .big-stat .num { font-family:'Playfair Display',serif; font-size:28px; color:var(--gold-light); line-height:1; }
+  .big-stat .lbl { font-size:12px; color:var(--muted); margin-top:.25rem; }
+  .big-stat .sub { font-size:11px; color:var(--muted); margin-top:.1rem; }
+
+  /* ── Mejor empleado ── */
+  .empleado-top {
+    background:rgba(181,145,74,.08); border:1px solid rgba(181,145,74,.25);
+    border-radius:var(--radius); padding:.75rem 1rem;
+    display:flex; align-items:center; gap:.75rem; margin-bottom:1.5rem;
+  }
+
+  /* ── Comandas activas (para pagar) ── */
+  .comandas-pago-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:.9rem; }
+  .cpago-card {
+    background:var(--bg2); border:1px solid rgba(181,145,74,.15);
+    border-radius:var(--radius-lg); padding:1rem 1.1rem;
+  }
+  .cpago-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:.6rem; }
+  .cpago-mesa   { font-family:'Playfair Display',serif; font-size:17px; }
+  .cpago-mozo   { font-size:11px; color:var(--muted); margin-bottom:.5rem; }
+  .cpago-items  { font-size:12px; color:var(--muted); margin-bottom:.6rem; line-height:1.7; }
+  .cpago-footer { display:flex; align-items:center; justify-content:space-between; margin-top:.65rem; flex-wrap:wrap; gap:.5rem; }
+  .cpago-total  { font-family:'Playfair Display',serif; font-size:18px; color:var(--gold-light); }
+
+  .paga-toggle {
+    display:inline-flex; align-items:center; gap:.4rem;
+    padding:.35rem .85rem; border-radius:20px; font-size:12px; font-weight:500;
+    cursor:pointer; border:none; transition:all .18s;
+  }
+  .paga-toggle.no-paga { background:rgba(192,57,43,.15); color:#e57373; }
+  .paga-toggle.no-paga:hover { background:rgba(192,57,43,.28); }
+  .paga-toggle.paga     { background:rgba(39,174,96,.2); color:#6fd993; }
+  .paga-toggle.paga:hover { background:rgba(39,174,96,.35); }
+
+  /* ── Filtro histórico ── */
+  .filtro-bar {
+    display:flex; gap:.75rem; align-items:flex-end; flex-wrap:wrap;
+    background:var(--bg2); border:1px solid rgba(181,145,74,.13);
+    border-radius:var(--radius); padding:.85rem 1.1rem; margin-bottom:1.25rem;
+  }
+  .filtro-bar label { font-size:11px; color:var(--muted); display:block; margin-bottom:.3rem; }
+  .filtro-bar input[type=date] { width:150px; }
+
+  /* ── Histórico tabla / ranking ── */
+  .hist-cols { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
+  @media(max-width:700px) { .hist-cols { grid-template-columns:1fr; } }
+
+  .ranking-lista { list-style:none; padding:0; margin:0; }
+  .ranking-item  { display:flex; align-items:center; gap:.65rem; padding:.5rem .4rem; border-bottom:1px solid rgba(255,255,255,.04); }
+  .rank-pos    { font-family:'Playfair Display',serif; font-size:16px; color:var(--gold-light); min-width:22px; }
+  .rank-nombre { flex:1; font-size:13px; }
+  .rank-total  { font-size:11px; color:var(--muted); }
+  .rank-monto  { font-size:13px; color:var(--gold-light); font-weight:500; }
+</style>
+</head>
+<body class="page-wrapper">
+
+<header class="topbar">
+  <a class="topbar-logo" href="dashboard.html"><div class="topbar-icon">🍽️</div> ComandApp</a>
+  <div class="topbar-sep"></div>
+  <div class="topbar-user">Bienvenido, <strong id="topbar-name"></strong></div>
+  <div class="topbar-avatar" id="topbar-avatar">D</div>
+  <span id="topbar-role" class="topbar-role"></span>
+  <button class="btn-logout" onclick="logout()">Salir</button>
+</header>
+
+<div class="app-body">
+  <nav class="sidebar">
+    <div class="sidebar-label">Panel</div>
+    <a class="nav-item" href="dashboard.html"><span class="ni">🏠</span> Inicio</a>
+    <a class="nav-item" href="usuarios.html"><span class="ni">👥</span> Usuarios</a>
+    <a class="nav-item" href="mesas.html"><span class="ni">🪑</span> Mesas</a>
+    <a class="nav-item" href="menu.html"><span class="ni">🍴</span> Menú</a>
+    <a class="nav-item active" href="comandas.html"><span class="ni">📊</span> Comandas</a>
+  </nav>
+
+  <main class="main">
+    <div class="page-header">
+      <div><h1>Comandas</h1><p id="fecha-hoy"></p></div>
+      <button class="btn btn-outline" onclick="recargar()">↺ Actualizar</button>
+    </div>
+
+    <!-- Tabs de sección -->
+    <div class="section-tabs">
+      <button class="stab active" onclick="cambiarTab('hoy',this)">📊 Hoy</button>
+      <button class="stab" onclick="cambiarTab('pago',this)">💳 Cobro</button>
+      <button class="stab" onclick="cambiarTab('historico',this)">📅 Histórico</button>
+    </div>
+
+    <!-- ════ TAB: HOY ════ -->
+    <div id="sec-hoy" class="section active">
+      <div class="empleado-top" id="mejor-wrap" style="display:none;">
+        <span style="font-size:26px;">🏆</span>
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:15px;" id="mejor-nombre">—</div>
+          <div style="font-size:12px;color:var(--muted);" id="mejor-sub"></div>
+        </div>
+      </div>
+
+      <div class="big-stats">
+        <div class="big-stat destacado">
+          <div class="num" id="hoy-monto">—</div>
+          <div class="lbl">Facturado hoy</div>
+          <div class="sub" id="hoy-cobrado"></div>
+        </div>
+        <div class="big-stat">
+          <div class="num" id="hoy-entregadas">—</div>
+          <div class="lbl">Entregadas</div>
+        </div>
+        <div class="big-stat">
+          <div class="num" id="hoy-activas">—</div>
+          <div class="lbl">Activas ahora</div>
+        </div>
+        <div class="big-stat">
+          <div class="num" id="hoy-rechazadas" style="color:#e57373;">—</div>
+          <div class="lbl">Rechazadas</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ TAB: COBRO ════ -->
+    <div id="sec-pago" class="section">
+      <div class="page-header" style="margin-bottom:1rem;">
+        <div>
+          <h2 style="font-size:18px;">Cobro de comandas</h2>
+          <p>Marcá las comandas como pagas cuando el cliente abone</p>
+        </div>
+      </div>
+
+      <!-- Filtro por estado -->
+      <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;">
+        <button class="btn btn-sm btn-gold"    id="fp-todas"      onclick="setFiltroPago('todas')">Todas</button>
+        <button class="btn btn-sm btn-outline" id="fp-sin-pagar"  onclick="setFiltroPago('sin-pagar')">💳 Sin pagar</button>
+        <button class="btn btn-sm btn-outline" id="fp-pagas"      onclick="setFiltroPago('pagas')">✓ Pagas</button>
+      </div>
+
+      <div class="comandas-pago-grid" id="grid-pago">
+        <div class="empty"><div class="e-icon">💳</div><p>Cargando...</p></div>
+      </div>
+    </div>
+
+    <!-- ════ TAB: HISTÓRICO ════ -->
+    <div id="sec-historico" class="section">
+      <div class="filtro-bar">
+        <div>
+          <label>Desde</label>
+          <input type="date" id="f-desde" />
+        </div>
+        <div>
+          <label>Hasta</label>
+          <input type="date" id="f-hasta" />
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="cargarHistorico()">Consultar</button>
+      </div>
+
+      <div id="hist-totales" style="display:none;">
+        <div class="stats-row" style="margin-bottom:1.25rem;">
+          <div class="stat-card"><div class="num" id="h-total">0</div><div class="lbl">Total</div></div>
+          <div class="stat-card"><div class="num" id="h-entregadas">0</div><div class="lbl">Entregadas</div></div>
+          <div class="stat-card"><div class="num" id="h-rechazadas">0</div><div class="lbl">Rechazadas</div></div>
+          <div class="stat-card"><div class="num" id="h-monto">$0</div><div class="lbl">Facturado</div></div>
+          <div class="stat-card"><div class="num" id="h-cobrado">$0</div><div class="lbl">Cobrado</div></div>
+        </div>
+
+        <div class="hist-cols">
+          <div>
+            <div class="card-title" style="font-size:13px;margin-bottom:.75rem;">📆 Por día</div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Fecha</th><th>Total</th><th>Entregadas</th><th>Rechazadas</th><th>Facturado</th></tr></thead>
+                <tbody id="hist-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <div class="card-title" style="font-size:13px;margin-bottom:.75rem;">🏅 Ranking</div>
+            <ul class="ranking-lista" id="ranking-lista"></ul>
+          </div>
+        </div>
+      </div>
+
+      <div id="hist-empty" style="text-align:center;padding:2rem;color:var(--muted);font-size:13px;">
+        Seleccioná un rango de fechas y consultá
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="../js/api.js"></script>
+<script>
+requireAuth(['owner']); setupTopbar();
+
+const hoy = new Date().toISOString().slice(0,10);
+document.getElementById('fecha-hoy').textContent =
+  new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+document.getElementById('f-desde').value = new Date(Date.now()-7*86400000).toISOString().slice(0,10);
+document.getElementById('f-hasta').value = hoy;
+
+let _comandasPago = [];
+let _filtroPago   = 'todas';
+
+// ── Tabs ────────────────────────────────────────────────
+function cambiarTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.stab').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'pago') cargarPago();
+}
+
+function recargar() {
+  cargarHoy();
+  if (document.getElementById('sec-pago').classList.contains('active')) cargarPago();
+}
+
+// ── HOY ─────────────────────────────────────────────────
+async function cargarHoy() {
+  try {
+    const s = await apiFetch('/comandas/stats/hoy');
+    document.getElementById('hoy-monto').textContent      = formatPrecio(s.monto_total);
+    document.getElementById('hoy-cobrado').textContent    = `Cobrado: ${formatPrecio(s.monto_cobrado)}`;
+    document.getElementById('hoy-entregadas').textContent = s.entregadas;
+    document.getElementById('hoy-activas').textContent    = s.activas;
+    document.getElementById('hoy-rechazadas').textContent = s.rechazadas;
+    if (s.mejor_empleado) {
+      document.getElementById('mejor-nombre').textContent =
+        `${s.mejor_empleado.nombre} ${s.mejor_empleado.apellido}`;
+      document.getElementById('mejor-sub').textContent =
+        `Mejor empleado del día · ${s.mejor_empleado.total} comanda(s)`;
+      document.getElementById('mejor-wrap').style.display = 'flex';
+    }
+  } catch(e) { toast(e.message,'error'); }
+}
+
+// ── COBRO ────────────────────────────────────────────────
+async function cargarPago() {
+  try {
+    // Trae todas las activas + las entregadas de hoy para poder marcarlas
+    const [activas, entregadas] = await Promise.all([
+      apiFetch('/comandas'),
+      apiFetch(`/comandas/stats/hoy`) // solo para saber si hay entregadas
+    ]);
+    // Pedimos también las entregadas de hoy
+    _comandasPago = await apiFetch('/comandas/todas-hoy');
+    renderGridPago();
+  } catch(e) {
+    // Fallback: solo muestra las activas
+    try {
+      _comandasPago = await apiFetch('/comandas');
+      renderGridPago();
+    } catch(e2) { toast(e2.message,'error'); }
+  }
+}
+
+function setFiltroPago(f) {
+  _filtroPago = f;
+  document.querySelectorAll('[id^="fp-"]').forEach(b => {
+    b.classList.remove('btn-gold'); b.classList.add('btn-outline');
+  });
+  const ids = { todas:'fp-todas', 'sin-pagar':'fp-sin-pagar', pagas:'fp-pagas' };
+  document.getElementById(ids[f]).classList.replace('btn-outline','btn-gold');
+  renderGridPago();
+}
+
+function renderGridPago() {
+  let data = _comandasPago;
+  if (_filtroPago === 'sin-pagar') data = data.filter(c => !c.pagada);
+  if (_filtroPago === 'pagas')     data = data.filter(c =>  c.pagada);
+
+  const grid = document.getElementById('grid-pago');
+  if (!data.length) {
+    grid.innerHTML = `<div class="empty"><div class="e-icon">💳</div><p>Sin comandas para este filtro</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = data.map(c => `
+    <div class="cpago-card">
+      <div class="cpago-header">
+        <span class="cpago-mesa">Mesa ${c.mesa_numero || '—'}</span>
+        ${estadoBadge(c.estado)}
+      </div>
+      <div class="cpago-mozo">🧍 ${c.mozo_nombre || '—'} ${c.mozo_apellido || ''} · ${tiempoRelativo(c.creado_en)}</div>
+      <div class="cpago-items">
+        ${(c.items||[]).map(i=>`${i.cantidad}× ${i.producto}`).join(' · ')}
+      </div>
+      ${c.observaciones ? `<div style="font-size:11px;color:var(--muted);font-style:italic;margin-bottom:.4rem;">📝 ${c.observaciones}</div>` : ''}
+      <div class="cpago-footer">
+        <span class="cpago-total">${formatPrecio(c.total)}</span>
+        <button class="paga-toggle ${c.pagada?'paga':'no-paga'}" onclick="togglePagar(${c.id}, ${!c.pagada})">
+          💳 ${c.pagada ? 'Paga ✓' : 'Sin pagar'}
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function togglePagar(id, nuevoPagada) {
+  try {
+    await apiFetch(`/comandas/${id}/pagar`, { method:'PUT', body: JSON.stringify({ pagada: nuevoPagada }) });
+    const idx = _comandasPago.findIndex(c => c.id === id);
+    if (idx !== -1) _comandasPago[idx].pagada = nuevoPagada;
+    renderGridPago();
+    toast(nuevoPagada ? '💳 Marcada como paga' : 'Marcada como sin pagar');
+  } catch(e) { toast(e.message,'error'); }
+}
+
+// ── HISTÓRICO ────────────────────────────────────────────
+async function cargarHistorico() {
+  const desde = document.getElementById('f-desde').value;
+  const hasta = document.getElementById('f-hasta').value;
+  if (!desde || !hasta) { toast('Seleccioná desde y hasta','error'); return; }
+
+  try {
+    const d = await apiFetch(`/comandas/stats/historico?desde=${desde}&hasta=${hasta}`);
+
+    document.getElementById('h-total').textContent      = d.totales.total;
+    document.getElementById('h-entregadas').textContent = d.totales.entregadas;
+    document.getElementById('h-rechazadas').textContent = d.totales.rechazadas;
+    document.getElementById('h-monto').textContent      = formatPrecio(d.totales.monto_total);
+    document.getElementById('h-cobrado').textContent    = formatPrecio(d.totales.monto_cobrado);
+
+    const tbody = document.getElementById('hist-tbody');
+    tbody.innerHTML = !d.por_dia.length
+      ? '<tr><td colspan="5" style="color:var(--muted);padding:.75rem;">Sin datos</td></tr>'
+      : d.por_dia.map(r => `
+          <tr>
+            <td>${new Date(r.fecha+'T00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'})}</td>
+            <td>${r.total}</td>
+            <td>${r.entregadas}</td>
+            <td style="color:#e57373;">${r.rechazadas}</td>
+            <td style="color:var(--gold-light);">${formatPrecio(r.monto)}</td>
+          </tr>`).join('');
+
+    const lista = document.getElementById('ranking-lista');
+    lista.innerHTML = !d.empleados.length
+      ? '<li style="color:var(--muted);font-size:13px;padding:.5rem 0;">Sin datos</li>'
+      : d.empleados.map((e,i) => `
+          <li class="ranking-item">
+            <span class="rank-pos">${i+1}</span>
+            <span class="rank-nombre">${e.nombre} ${e.apellido}</span>
+            <span class="rank-total">${e.total} cmd</span>
+            <span class="rank-monto">${formatPrecio(e.monto)}</span>
+          </li>`).join('');
+
+    document.getElementById('hist-totales').style.display = 'block';
+    document.getElementById('hist-empty').style.display   = 'none';
+  } catch(e) { toast(e.message,'error'); }
+}
+
+cargarHoy();
+</script>
+</body>
+</html>

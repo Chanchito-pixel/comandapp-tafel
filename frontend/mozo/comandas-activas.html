@@ -5,21 +5,19 @@
 <title>Mis Comandas — ComandApp</title>
 <link rel="stylesheet" href="../css/styles.css" />
 <style>
-  .comandas-cols {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1rem;
+  .cols-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1rem; }
+  .col-header { display:flex; align-items:center; gap:.5rem; margin-bottom:.75rem; padding-bottom:.5rem; border-bottom:1px solid rgba(181,145,74,.18); }
+  .col-title  { font-family:'Playfair Display',serif; font-size:15px; color:var(--gold-light); }
+  .col-count  { background:rgba(181,145,74,.18); color:var(--gold-light); border-radius:20px; padding:2px 8px; font-size:11px; }
+  .paga-toggle {
+    display:inline-flex; align-items:center; gap:.4rem;
+    padding:.32rem .75rem; border-radius:20px; font-size:12px; font-weight:500;
+    cursor:pointer; border:none; transition:all .18s;
   }
-  .col-header {
-    display: flex; align-items: center; gap: .5rem;
-    margin-bottom: .75rem; padding-bottom: .5rem;
-    border-bottom: 1px solid rgba(181,145,74,.18);
-  }
-  .col-title { font-family:'Playfair Display',serif; font-size:15px; color:var(--gold-light); }
-  .col-count {
-    background:rgba(181,145,74,.18); color:var(--gold-light);
-    border-radius:20px; padding:2px 8px; font-size:11px;
-  }
+  .paga-toggle.no-paga { background:rgba(192,57,43,.15); color:#e57373; }
+  .paga-toggle.no-paga:hover { background:rgba(192,57,43,.28); }
+  .paga-toggle.paga     { background:rgba(39,174,96,.2); color:#6fd993; }
+  .paga-toggle.paga:hover { background:rgba(39,174,96,.35); }
 </style>
 </head>
 <body class="page-wrapper">
@@ -47,43 +45,26 @@
       <button class="btn btn-outline" onclick="cargar()">↺ Actualizar</button>
     </div>
 
-    <!-- Vista en columnas por estado -->
-    <div class="comandas-cols">
-      <!-- Pendientes -->
+    <div class="cols-grid">
       <div>
-        <div class="col-header">
-          <span style="font-size:16px;">🕐</span>
-          <span class="col-title">Pendientes</span>
-          <span class="col-count" id="cnt-pendiente">0</span>
-        </div>
+        <div class="col-header"><span style="font-size:16px;">🕐</span><span class="col-title">Pendientes</span><span class="col-count" id="cnt-pendiente">0</span></div>
         <div id="col-pendiente"></div>
       </div>
-      <!-- Aceptadas -->
       <div>
-        <div class="col-header">
-          <span style="font-size:16px;">👨‍🍳</span>
-          <span class="col-title">En cocina</span>
-          <span class="col-count" id="cnt-aceptada">0</span>
-        </div>
+        <div class="col-header"><span style="font-size:16px;">👨‍🍳</span><span class="col-title">En cocina</span><span class="col-count" id="cnt-aceptada">0</span></div>
         <div id="col-aceptada"></div>
       </div>
-      <!-- Listas -->
       <div>
-        <div class="col-header">
-          <span style="font-size:16px;">🔔</span>
-          <span class="col-title">Listas para entregar</span>
-          <span class="col-count" id="cnt-lista">0</span>
-        </div>
+        <div class="col-header"><span style="font-size:16px;">🔔</span><span class="col-title">Listas para entregar</span><span class="col-count" id="cnt-lista">0</span></div>
         <div id="col-lista"></div>
       </div>
     </div>
 
-    <!-- Rechazadas (colapsables) -->
     <div style="margin-top:1.5rem;">
       <div class="col-header">
         <span style="font-size:16px;">✕</span>
         <span class="col-title" style="color:#e57373;">Rechazadas</span>
-        <span class="col-count" id="cnt-rechazada" style="background:rgba(192,57,43,.2); color:#e57373;">0</span>
+        <span class="col-count" id="cnt-rechazada" style="background:rgba(192,57,43,.2);color:#e57373;">0</span>
       </div>
       <div id="col-rechazada"></div>
     </div>
@@ -108,14 +89,13 @@ async function cargar() {
 
 function render() {
   const estados = ['pendiente','aceptada','lista','rechazada'];
-
   estados.forEach(est => {
     const items = _data.filter(c => c.estado === est);
     document.getElementById('cnt-' + est).textContent = items.length;
     const col = document.getElementById('col-' + est);
 
     if (!items.length) {
-      col.innerHTML = `<div style="font-size:12px; color:var(--muted); padding:.75rem .5rem;">Sin comandas</div>`;
+      col.innerHTML = `<div style="font-size:12px;color:var(--muted);padding:.75rem .5rem;">Sin comandas</div>`;
       return;
     }
 
@@ -126,25 +106,31 @@ function render() {
           ${estadoBadge(c.estado)}
         </div>
         <div class="comanda-items">
-          ${(c.items || []).map(i =>
-            `<div class="comanda-item">
+          ${(c.items||[]).map(i=>`
+            <div class="comanda-item">
               <span>${i.producto}</span>
               <span style="color:var(--muted);">x${i.cantidad}</span>
               <span style="color:var(--gold-light);">${formatPrecio(i.subtotal)}</span>
-            </div>`
-          ).join('')}
+            </div>`).join('')}
         </div>
         ${c.observaciones ? `<div class="comanda-obs">📝 ${c.observaciones}</div>` : ''}
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:.5rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.5rem;">
           <span class="comanda-time">${tiempoRelativo(c.creado_en)}</span>
           <span class="comanda-total">${formatPrecio(c.total)}</span>
         </div>
-        ${est === 'lista' ? `
-          <div class="comanda-actions">
-            <button class="btn btn-success btn-sm" onclick="marcarEntregada(${c.id})">
-              ✓ Marcar como entregada
+        <div class="comanda-actions" style="margin-top:.6rem; flex-wrap:wrap;">
+          ${est === 'lista' ? `
+            <button class="btn btn-success btn-sm" onclick="marcarEntregada(${c.id})">✓ Entregar</button>
+          ` : ''}
+          ${(est === 'lista' || est === 'aceptada' || est === 'pendiente') ? `
+            <button class="paga-toggle ${c.pagada ? 'paga' : 'no-paga'}" onclick="togglePagar(${c.id}, ${!c.pagada})">
+              💳 ${c.pagada ? 'Paga ✓' : 'Sin pagar'}
             </button>
-          </div>` : ''}
+          ` : ''}
+          ${est === 'rechazada' ? `
+            <button class="btn btn-danger btn-sm" onclick="borrarComanda(${c.id})">🗑 Borrar</button>
+          ` : ''}
+        </div>
       </div>
     `).join('');
   });
@@ -152,34 +138,47 @@ function render() {
 
 async function marcarEntregada(id) {
   try {
-    await apiFetch(`/comandas/${id}/estado`, {
-      method: 'PUT', body: JSON.stringify({ estado: 'entregada' })
-    });
-    toast('Comanda marcada como entregada');
+    await apiFetch(`/comandas/${id}/estado`, { method:'PUT', body: JSON.stringify({ estado:'entregada' }) });
+    toast('Comanda entregada');
     await cargar();
   } catch(e) { toast(e.message,'error'); }
 }
 
-// Socket.IO — actualiza automáticamente cuando cocina cambia el estado
+async function togglePagar(id, nuevoPagada) {
+  try {
+    await apiFetch(`/comandas/${id}/pagar`, { method:'PUT', body: JSON.stringify({ pagada: nuevoPagada }) });
+    const idx = _data.findIndex(c => c.id === id);
+    if (idx !== -1) _data[idx].pagada = nuevoPagada;
+    render();
+    toast(nuevoPagada ? '💳 Comanda marcada como paga' : 'Comanda marcada como sin pagar');
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function borrarComanda(id) {
+  if (!confirm('¿Eliminar esta comanda rechazada?')) return;
+  try {
+    await apiFetch(`/comandas/${id}`, { method:'DELETE' });
+    _data = _data.filter(c => c.id !== id);
+    render();
+    toast('Comanda eliminada');
+  } catch(e) { toast(e.message,'error'); }
+}
+
 const socket = io('http://localhost:3000');
 socket.emit('join', `mozo-${user.id}`);
 
 socket.on('comanda-actualizada', ({ id, estado }) => {
   const idx = _data.findIndex(c => c.id === id);
-  if (idx !== -1) {
-    _data[idx].estado = estado;
-    render();
-  }
+  if (idx !== -1) { _data[idx].estado = estado; render(); }
   const msgs = {
-    aceptada:  '👨‍🍳 Tu comanda fue aceptada y está en cocina',
-    rechazada: '✕ Cocina rechazó una de tus comandas',
-    lista:     '🔔 ¡Una comanda está lista para servir!',
+    aceptada: '👨‍🍳 Tu comanda fue aceptada',
+    rechazada:'✕ Cocina rechazó una comanda',
+    lista:    '🔔 ¡Una comanda está lista para servir!',
   };
   if (msgs[estado]) toast(msgs[estado], estado === 'rechazada' ? 'error' : 'success', 5000);
 });
 
 cargar();
-// Refresco automático cada 60 segundos
 setInterval(cargar, 60000);
 </script>
 </body>

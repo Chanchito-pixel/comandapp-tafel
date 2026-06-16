@@ -1,34 +1,24 @@
 /* ════════════════════════════════════════════════════════
    js/api.js  —  Funciones compartidas por todas las páginas
-   Importar con: <script src="../js/api.js"></script>
-   (o <script src="js/api.js"> desde la raíz)
 ════════════════════════════════════════════════════════ */
 
-const API = 'http://localhost:3000/api';
+const API = '/api';
 
-// ── Sesión ────────────────────────────────────────────────
+// ── Sesión ─────────────────────────────────────────────────
 function getToken()  { return sessionStorage.getItem('token'); }
 function getUser()   { const u = sessionStorage.getItem('user'); return u ? JSON.parse(u) : null; }
 function setSession(token, usuario) {
-  sessionStorage.setItem('token',   token);
-  sessionStorage.setItem('user',    JSON.stringify(usuario));
+  sessionStorage.setItem('token', token);
+  sessionStorage.setItem('user', JSON.stringify(usuario));
 }
 function clearSession() { sessionStorage.clear(); }
 
-// ── Guard de auth ─────────────────────────────────────────
-// Llamar al inicio de cada página protegida:
-// requireAuth(['owner']) o requireAuth(['mozo','cocina'])
+// ── Guard de auth ───────────────────────────────────────────
 function requireAuth(roles = []) {
   const token = getToken();
   const user  = getUser();
-  if (!token || !user) {
-    window.location.href = _loginPath();
-    return null;
-  }
-  if (roles.length && !roles.includes(user.rol)) {
-    window.location.href = _loginPath();
-    return null;
-  }
+  if (!token || !user) { window.location.href = _loginPath(); return null; }
+  if (roles.length && !roles.includes(user.rol)) { window.location.href = _loginPath(); return null; }
   return user;
 }
 
@@ -45,24 +35,17 @@ function logout() {
   window.location.href = _loginPath();
 }
 
-// ── Fetch helper ──────────────────────────────────────────
+// ── Fetch helper ────────────────────────────────────────────
 async function apiFetch(path, options = {}) {
   const token   = getToken();
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = 'Bearer ' + token;
-
   try {
     const res  = await fetch(API + path, { ...options, headers });
     const data = await res.json();
-
-    if (res.status === 401) {
-      clearSession();
-      window.location.href = _loginPath();
-      return null;
-    }
+    if (res.status === 401) { clearSession(); window.location.href = _loginPath(); return null; }
     if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
     return data;
-
   } catch (err) {
     if (err.message.includes('Failed to fetch')) {
       throw new Error('No se puede conectar al servidor. ¿Está corriendo node server.js?');
@@ -71,7 +54,7 @@ async function apiFetch(path, options = {}) {
   }
 }
 
-// ── Toast ─────────────────────────────────────────────────
+// ── Toast ────────────────────────────────────────────────────
 function toast(msg, type = 'success', duration = 3200) {
   let el = document.getElementById('toast');
   if (!el) {
@@ -86,8 +69,7 @@ function toast(msg, type = 'success', duration = 3200) {
   el._t = setTimeout(() => el.classList.remove('show'), duration);
 }
 
-// ── Topbar helper ─────────────────────────────────────────
-// Rellena los elementos del topbar con los datos del usuario
+// ── Topbar + botón volver mobile ────────────────────────────
 function setupTopbar() {
   const user = getUser();
   if (!user) return;
@@ -103,34 +85,50 @@ function setupTopbar() {
     role.textContent = labels[user.rol] || user.rol;
     role.className   = `topbar-role role-${user.rol}`;
   }
+
+  // Botón volver — solo visible en mobile (CSS lo oculta en desktop)
+  if (!document.getElementById('btn-back-mobile')) {
+    const btn = document.createElement('button');
+    btn.id        = 'btn-back-mobile';
+    btn.className = 'btn-back-mobile';
+    btn.innerHTML = '&#8592; Volver';
+    btn.onclick   = () => history.back();
+    document.body.appendChild(btn);
+  }
 }
 
-// ── Badge helpers ─────────────────────────────────────────
+// ── Badge helpers ───────────────────────────────────────────
 function rolBadge(rol) {
-  const map = { owner: 'badge-owner', mozo: 'badge-mozo', cocina: 'badge-cocina' };
-  const lbl = { owner: 'Dueño', mozo: 'Mozo', cocina: 'Cocina' };
+  const map = { owner:'badge-owner', mozo:'badge-mozo', cocina:'badge-cocina' };
+  const lbl = { owner:'Dueño', mozo:'Mozo', cocina:'Cocina' };
   return `<span class="badge ${map[rol]||''}">${lbl[rol]||rol}</span>`;
 }
 
 function estadoBadge(estado) {
   const cls = {
-    pendiente: 'badge-pendiente', aceptada: 'badge-aceptada',
-    rechazada: 'badge-rechazada', lista: 'badge-lista',
-    entregada: 'badge-entregada', libre: 'badge-libre',
-    ocupada:   'badge-ocupada',   reservada: 'badge-reserv'
+    pendiente:'badge-pendiente', aceptada:'badge-aceptada',
+    rechazada:'badge-rechazada', lista:'badge-lista',
+    entregada:'badge-entregada', libre:'badge-libre',
+    ocupada:'badge-ocupada',     reservada:'badge-reserv'
   };
   return `<span class="badge ${cls[estado]||''}">${estado}</span>`;
 }
 
-// ── Tiempo relativo ───────────────────────────────────────
+function pagadaBadge(pagada) {
+  return pagada
+    ? `<span class="badge" style="background:rgba(39,174,96,.2);color:#6fd993;">💳 Paga</span>`
+    : `<span class="badge" style="background:rgba(192,57,43,.15);color:#e57373;">💳 Sin pagar</span>`;
+}
+
+// ── Tiempo relativo ─────────────────────────────────────────
 function tiempoRelativo(fecha) {
   const diff = Math.floor((Date.now() - new Date(fecha)) / 1000);
-  if (diff < 60)  return `hace ${diff}s`;
+  if (diff < 60)   return `hace ${diff}s`;
   if (diff < 3600) return `hace ${Math.floor(diff/60)}m`;
   return `hace ${Math.floor(diff/3600)}h`;
 }
 
-// ── Formatear precio ──────────────────────────────────────
+// ── Formatear precio ────────────────────────────────────────
 function formatPrecio(n) {
   return '$' + parseFloat(n || 0).toFixed(2);
 }
