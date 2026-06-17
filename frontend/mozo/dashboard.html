@@ -81,7 +81,7 @@
 <script>
   // Socket.IO desde CDN (mismo que el backend)
 </script>
-<script src="http://localhost:3000/socket.io/socket.io.js"></script>
+<script src="/socket.io/socket.io.js"></script>
 <script>
 const user = requireAuth(['mozo']);
 if (user) {
@@ -89,7 +89,7 @@ if (user) {
   document.getElementById('bienvenida').textContent = `Hola, ${user.nombre} 👋`;
 
   // Conectar Socket.IO y unirse a la sala personal del mozo
-  const socket = io('http://localhost:3000');
+  const socket = io('https://comandapp-tafel-1.onrender.com');
   socket.emit('join', `mozo-${user.id}`);
 
   // Escuchar actualizaciones de sus comandas

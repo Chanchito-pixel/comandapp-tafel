@@ -156,7 +156,7 @@
 
 <div id="toast" class="toast"></div>
 <script src="../js/api.js"></script>
-<script src="http://localhost:3000/socket.io/socket.io.js"></script>
+<script src="/socket.io/socket.io.js"></script>
 <script>
 requireAuth(['cocina']); setupTopbar();
 
@@ -292,7 +292,7 @@ async function cambiarEstado(id, estado) {
 }
 
 // ── Socket.IO — recibe nuevas comandas en tiempo real ─────
-const socket = io('http://localhost:3000');
+const socket = io('https://comandapp-tafel-1.onrender.com');
 socket.emit('join', 'cocina');
 
 socket.on('nueva-comanda', (comanda) => {

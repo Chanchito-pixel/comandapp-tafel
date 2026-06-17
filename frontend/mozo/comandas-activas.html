@@ -73,7 +73,7 @@
 
 <div id="toast" class="toast"></div>
 <script src="../js/api.js"></script>
-<script src="http://localhost:3000/socket.io/socket.io.js"></script>
+<script src="/socket.io/socket.io.js"></script>
 <script>
 const user = requireAuth(['mozo']);
 if (user) setupTopbar();
@@ -164,7 +164,7 @@ async function borrarComanda(id) {
   } catch(e) { toast(e.message,'error'); }
 }
 
-const socket = io('http://localhost:3000');
+const socket = io('https://comandapp-tafel-1.onrender.com');
 socket.emit('join', `mozo-${user.id}`);
 
 socket.on('comanda-actualizada', ({ id, estado }) => {

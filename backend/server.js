@@ -88,3 +88,9 @@ httpServer.listen(PORT, () => {
   console.log('   PUT              /api/comandas/:id/estado');
   console.log('   DELETE           /api/comandas/:id\n');
 });
+
+const PORT = process.env.PORT || 3000;
+
+httpServer.listen(PORT, () => {
+    console.log(`Servidor corriendo en el puerto ${PORT}`);
+});
