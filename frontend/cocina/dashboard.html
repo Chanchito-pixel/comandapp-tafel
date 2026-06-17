@@ -292,7 +292,7 @@ async function cambiarEstado(id, estado) {
 }
 
 // ── Socket.IO — recibe nuevas comandas en tiempo real ─────
-const socket = io('https://comandapp-tafel-1.onrender.com');
+const socket = io();
 socket.emit('join', 'cocina');
 
 socket.on('nueva-comanda', (comanda) => {

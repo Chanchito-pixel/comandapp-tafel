@@ -164,7 +164,7 @@ async function borrarComanda(id) {
   } catch(e) { toast(e.message,'error'); }
 }
 
-const socket = io('https://comandapp-tafel-1.onrender.com');
+const socket = io();
 socket.emit('join', `mozo-${user.id}`);
 
 socket.on('comanda-actualizada', ({ id, estado }) => {

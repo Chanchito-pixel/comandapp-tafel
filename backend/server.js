@@ -60,13 +60,13 @@ app.use('/api/mesas',    require('./routes/mesas'));
 app.use('/api/menu',     require('./routes/menu'));
 app.use('/api/comandas', require('./routes/comandas'));
 
-// ── Ruta de estado ────────────────────────────────────────
+/* // ── Ruta de estado ────────────────────────────────────────
 app.get('/', (req, res) => {
   res.json({ estado: '✅ ComandApp API corriendo', version: '2.0' });
 });
-
+ */
 // ── Inicio ────────────────────────────────────────────────
-const PORT = process.env.PORT || 3000;
+/* const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, () => {
   console.log(`\n🚀  Servidor en http://localhost:${PORT}`);
   console.log('📡  Socket.IO activo');
@@ -93,4 +93,11 @@ const PORT = process.env.PORT || 3000;
 
 httpServer.listen(PORT, () => {
     console.log(`Servidor corriendo en el puerto ${PORT}`);
+}); */
+
+const PORT = process.env.PORT || 3000;
+httpServer.listen(PORT, () => {
+  console.log(`\n🚀  Servidor corriendo exitosamente`);
+  console.log('📡  Socket.IO activo y escuchando eventos');
+  console.log('\n   Endpoints cargados correctamente.');
 });
