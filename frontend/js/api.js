@@ -22,13 +22,13 @@ function requireAuth(roles = []) {
   return user;
 }
 
-/* function _loginPath() {
+function _loginPath() {
   const path = window.location.pathname;
   if (path.includes('/owner/') || path.includes('/mozo/') || path.includes('/cocina/')) {
     return '../index.html';
   }
   return 'index.html';
-} */
+}
 
 function logout() {
   clearSession();
