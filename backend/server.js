@@ -98,6 +98,7 @@ httpServer.listen(PORT, () => {
 const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, () => {
   console.log(`\n🚀  Servidor corriendo exitosamente`);
+  console.log('Corriendo la versión de sistema:\nComandApp 1.0.0\nby TAFEL Group 2026\nAll rights reserved');
   console.log('📡  Socket.IO activo y escuchando eventos');
   console.log('\n   Endpoints cargados correctamente.');
 });
