@@ -4,6 +4,8 @@
 <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Panel Mozo — ComandApp</title>
 <link rel="stylesheet" href="../css/styles.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
 <style>
   .welcome-mozo {
     text-align: center; margin-top: 2rem;
@@ -50,6 +52,7 @@
 <header class="topbar">
   <a class="topbar-logo" href="dashboard.html"><div class="topbar-icon">🍽️</div> ComandApp</a>
   <div class="topbar-sep"></div>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Activar modo claro"></button>
   <div class="topbar-user">Hola, <strong id="topbar-name"></strong></div>
   <div class="topbar-avatar" id="topbar-avatar">M</div>
   <span id="topbar-role" class="topbar-role role-mozo">Mozo</span>
@@ -62,13 +65,13 @@
 
   <div class="big-btn-grid">
     <a class="big-btn" href="mesas.html">
-      <div class="bb-icon">🪑</div>
+      <i class="fa-solid fa-chair" style="font-size: 4em; vertical-align: middle;"></i>
       <div class="bb-label">Mesas</div>
       <div class="bb-sub">Ver todas las mesas y cargar comandas</div>
     </a>
     <a class="big-btn" href="comandas-activas.html" id="btn-comandas">
       <div class="notif-badge hidden" id="notif-count">0</div>
-      <div class="bb-icon">📋</div>
+      <i class="fa-solid fa-newspaper" style="font-size: 4em; vertical-align: middle;"></i>
       <div class="bb-label">Mis comandas</div>
       <div class="bb-sub">Ver el estado de tus comandas activas</div>
     </a>
@@ -78,6 +81,7 @@
 <div id="toast" class="toast"></div>
 
 <script src="../js/api.js"></script>
+<script src="../js/theme.js"></script>
 <script>
   // Socket.IO desde CDN (mismo que el backend)
 </script>

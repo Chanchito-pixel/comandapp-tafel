@@ -4,6 +4,8 @@
 <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Cocina — ComandApp</title>
 <link rel="stylesheet" href="../css/styles.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
 <style>
   /* Sonido visual de nueva comanda */
   @keyframes entradaNueva {
@@ -36,7 +38,7 @@
     margin-bottom: 1rem; padding-bottom: .6rem;
     border-bottom: 1px solid rgba(181,145,74,.15);
   }
-  .col-hdr-title { font-family:'Playfair Display',serif; font-size:15px; }
+  .col-hdr-title { font-family:'Arial',serif; font-size:15px; }
   .col-hdr-count {
     border-radius: 20px; padding: 2px 8px; font-size: 11px; font-weight: 500;
   }
@@ -83,6 +85,7 @@
 <header class="topbar">
   <a class="topbar-logo" href="dashboard.html"><div class="topbar-icon">🍽️</div> ComandApp</a>
   <div class="topbar-sep"></div>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Activar modo claro"></button>
   <div class="topbar-user"><strong id="topbar-name"></strong></div>
   <div class="topbar-avatar" id="topbar-avatar">C</div>
   <span id="topbar-role" class="topbar-role role-cocina">Cocina</span>
@@ -115,39 +118,39 @@
     <!-- PENDIENTES -->
     <div class="col-wrap">
       <div class="col-hdr">
-        <span style="font-size:18px;">🕐</span>
+        <i class="fa-regular fa-clock"></i>
         <span class="col-hdr-title" style="color:var(--warn);">Pendientes</span>
         <span class="col-hdr-count" id="cnt-pend"
           style="background:rgba(230,126,34,.2); color:var(--warn);">0</span>
       </div>
       <div id="col-pendiente">
-        <div class="empty"><div class="e-icon" style="font-size:24px;">✓</div><p>Sin pendientes</p></div>
+        <div class="empty"><div class="e-icon" style="font-size:24px;"><i class="fa-solid fa-xmark"></i></div><p>Sin pendientes</p></div>
       </div>
     </div>
 
     <!-- EN PREPARACIÓN -->
     <div class="col-wrap">
       <div class="col-hdr">
-        <span style="font-size:18px;">👨‍🍳</span>
+        <i class="fa-solid fa-kitchen-set"></i>
         <span class="col-hdr-title" style="color:var(--gold-light);">En preparación</span>
         <span class="col-hdr-count" id="cnt-acep"
           style="background:rgba(181,145,74,.2); color:var(--gold-light);">0</span>
       </div>
       <div id="col-aceptada">
-        <div class="empty"><div class="e-icon" style="font-size:24px;">🍳</div><p>Sin comandas</p></div>
+        <div class="empty"><div class="e-icon" style="font-size:24px;"><i class="fa-solid fa-bowl-food"></i></div><p>Sin comandas</p></div>
       </div>
     </div>
 
     <!-- LISTAS -->
     <div class="col-wrap">
       <div class="col-hdr">
-        <span style="font-size:18px;">🔔</span>
+        <i class="fa-solid fa-bell"></i>
         <span class="col-hdr-title" style="color:#74b9e7;">Listas</span>
         <span class="col-hdr-count" id="cnt-list"
           style="background:rgba(52,152,219,.2); color:#74b9e7;">0</span>
       </div>
       <div id="col-lista">
-        <div class="empty"><div class="e-icon" style="font-size:24px;">🍽️</div><p>Sin listas</p></div>
+        <div class="empty"><div class="e-icon" style="font-size:24px;"><i class="fa-solid fa-burger"></i></div><p>Sin listas</p></div>
       </div>
     </div>
 
@@ -156,6 +159,7 @@
 
 <div id="toast" class="toast"></div>
 <script src="../js/api.js"></script>
+<script src="../js/theme.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
 requireAuth(['cocina']); setupTopbar();

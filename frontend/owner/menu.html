@@ -4,11 +4,13 @@
 <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Menú — ComandApp</title>
 <link rel="stylesheet" href="../css/styles.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body class="page-wrapper">
 <header class="topbar">
   <a class="topbar-logo" href="dashboard.html"><div class="topbar-icon">🍽️</div> ComandApp</a>
   <div class="topbar-sep"></div>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Activar modo claro"></button>
   <div class="topbar-user">Bienvenido, <strong id="topbar-name"></strong></div>
   <div class="topbar-avatar" id="topbar-avatar">D</div>
   <span id="topbar-role" class="topbar-role"></span>
@@ -18,11 +20,11 @@
 <div class="app-body">
   <nav class="sidebar">
     <div class="sidebar-label">Panel</div>
-    <a class="nav-item" href="dashboard.html"><span class="ni">🏠</span> Inicio</a>
-    <a class="nav-item" href="usuarios.html"><span class="ni">👥</span> Usuarios</a>
-    <a class="nav-item" href="mesas.html"><span class="ni">🪑</span> Mesas</a>
-    <a class="nav-item active" href="menu.html"><span class="ni">🍴</span> Menú</a>
-    <a class="nav-item" href="comandas.html"><span class="ni">📊</span> Comandas</a>
+    <a class="nav-item" href="dashboard.html"><i class="fa-solid fa-house"></i> Inicio</a>
+    <a class="nav-item" href="usuarios.html"><i class="fa-solid fa-users"></i> Usuarios</a>
+    <a class="nav-item" href="mesas.html"><i class="fa-solid fa-chair"></i> Mesas</a>
+    <a class="nav-item active" href="menu.html"><i class="fa-solid fa-burger"></i> Menú</a>
+    <a class="nav-item" href="comandas.html"><i class="fa-solid fa-newspaper"></i> Comandas</a>
 
   </nav>
 
@@ -39,7 +41,7 @@
 
     <!-- Crear -->
     <div class="card">
-      <div class="card-title">➕ Nuevo producto</div>
+      <div class="card-title"><i class="fa-solid fa-plus"></i> Nuevo producto</div>
       <div class="form-grid">
         <div class="form-group"><label>Nombre *</label><input id="n-nombre" placeholder="Ej: Milanesa napolitana" /></div>
         <div class="form-group"><label>Precio *</label><input id="n-precio" type="number" min="0" step="0.01" placeholder="0.00" /></div>
@@ -65,7 +67,7 @@
         </div>
       </div>
       <div class="form-actions">
-        <button class="btn btn-gold" onclick="crearProducto()">✔ Crear producto</button>
+        <button class="btn btn-gold" onclick="crearProducto()"><i class="fa-solid fa-check"></i> Crear producto</button>
         <button class="btn btn-outline" onclick="limpiarForm()">↺ Limpiar</button>
       </div>
     </div>
@@ -77,7 +79,8 @@
         <button class="btn btn-sm btn-gold" id="filtro-all" onclick="filtrar('all')">Todos</button>
         <div id="filtro-cats" style="display:flex; gap:.4rem; flex-wrap:wrap;"></div>
         <div style="margin-left:auto;">
-          <input id="buscar" placeholder="🔍 Buscar producto..." style="width:220px;" oninput="renderTabla()" />
+          <i class="fa-solid fa-magnifying-glass"></i>  
+          <input id="buscar" placeholder=" Buscar producto..." style="width:220px;" oninput="renderTabla()" />
         </div>
       </div>
     </div>
@@ -90,7 +93,7 @@
             <tr><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Disponible</th><th>Descripción</th><th>Acciones</th></tr>
           </thead>
           <tbody id="tbody-menu">
-            <tr><td colspan="6"><div class="empty"><div class="e-icon">🍴</div><p>Cargando...</p></div></td></tr>
+            <tr><td colspan="6"><div class="empty"><div class="e-icon"><i class="fa-solid fa-burger"></i></div><p>Cargando...</p></div></td></tr>
           </tbody>
         </table>
       </div>
@@ -134,6 +137,7 @@
 <div id="toast" class="toast"></div>
 
 <script src="../js/api.js"></script>
+<script src="../js/theme.js"></script>
 <script>
 requireAuth(['owner']); setupTopbar();
 

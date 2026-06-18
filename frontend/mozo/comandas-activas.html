@@ -4,6 +4,8 @@
 <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Mis Comandas — ComandApp</title>
 <link rel="stylesheet" href="../css/styles.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
 <style>
   .cols-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1rem; }
   .col-header { display:flex; align-items:center; gap:.5rem; margin-bottom:.75rem; padding-bottom:.5rem; border-bottom:1px solid rgba(181,145,74,.18); }
@@ -25,6 +27,7 @@
 <header class="topbar">
   <a class="topbar-logo" href="dashboard.html"><div class="topbar-icon">🍽️</div> ComandApp</a>
   <div class="topbar-sep"></div>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Activar modo claro"></button>
   <div class="topbar-user">Hola, <strong id="topbar-name"></strong></div>
   <div class="topbar-avatar" id="topbar-avatar">M</div>
   <span class="topbar-role role-mozo">Mozo</span>
@@ -34,9 +37,9 @@
 <div class="app-body">
   <nav class="sidebar">
     <div class="sidebar-label">Mozo</div>
-    <a class="nav-item" href="dashboard.html"><span class="ni">🏠</span> Inicio</a>
-    <a class="nav-item" href="mesas.html"><span class="ni">🪑</span> Mesas</a>
-    <a class="nav-item active" href="comandas-activas.html"><span class="ni">📋</span> Mis comandas</a>
+    <a class="nav-item" href="dashboard.html"><i class="fa-solid fa-house"></i> Inicio</a>
+    <a class="nav-item" href="mesas.html"><i class="fa-solid fa-chair"></i> Mesas</a>
+    <a class="nav-item active" href="comandas-activas.html"><i class="fa-solid fa-newspaper"></i> Mis comandas</a>
   </nav>
 
   <main class="main">
@@ -47,22 +50,22 @@
 
     <div class="cols-grid">
       <div>
-        <div class="col-header"><span style="font-size:16px;">🕐</span><span class="col-title">Pendientes</span><span class="col-count" id="cnt-pendiente">0</span></div>
+        <div class="col-header"><i class="fa-regular fa-clock"></i><span class="col-title">Pendientes</span><span class="col-count" id="cnt-pendiente">0</span></div>
         <div id="col-pendiente"></div>
       </div>
       <div>
-        <div class="col-header"><span style="font-size:16px;">👨‍🍳</span><span class="col-title">En cocina</span><span class="col-count" id="cnt-aceptada">0</span></div>
+        <div class="col-header"><i class="fa-solid fa-kitchen-set"></i><span class="col-title">En cocina</span><span class="col-count" id="cnt-aceptada">0</span></div>
         <div id="col-aceptada"></div>
       </div>
       <div>
-        <div class="col-header"><span style="font-size:16px;">🔔</span><span class="col-title">Listas para entregar</span><span class="col-count" id="cnt-lista">0</span></div>
+        <div class="col-header"><i class="fa-solid fa-bell"></i><span class="col-title">Listas para entregar</span><span class="col-count" id="cnt-lista">0</span></div>
         <div id="col-lista"></div>
       </div>
     </div>
 
     <div style="margin-top:1.5rem;">
       <div class="col-header">
-        <span style="font-size:16px;">✕</span>
+        <i class="fa-solid fa-xmark"></i>
         <span class="col-title" style="color:#e57373;">Rechazadas</span>
         <span class="col-count" id="cnt-rechazada" style="background:rgba(192,57,43,.2);color:#e57373;">0</span>
       </div>
@@ -73,6 +76,7 @@
 
 <div id="toast" class="toast"></div>
 <script src="../js/api.js"></script>
+<script src="../js/theme.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
 const user = requireAuth(['mozo']);

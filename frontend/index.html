@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>ComandApp — TAFEL</title>
 <link rel="stylesheet" href="css/styles.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
 
@@ -26,8 +27,8 @@
     <div class="form-group">
       <label for="inp-legajo">Número de legajo</label>
       <div class="login-input-wrap">
-        <input id="inp-legajo" type="number" placeholder="Ej: 1" autocomplete="username" />
-        <span class="login-icon">👤</span>
+          <input id="inp-legajo" type="number" placeholder="Ej: 1" autocomplete="username" />
+          <i class="login-icon ifw fa-solid fa-user"></i> 
       </div>
     </div>
 
@@ -35,7 +36,7 @@
       <label for="inp-pass">Contraseña</label>
       <div class="login-input-wrap">
         <input id="inp-pass" type="password" placeholder="••••••••" autocomplete="current-password" />
-        <span class="login-icon">🔒</span>
+        <i class="login-icon fa-solid fa-lock"></i>
       </div>
     </div>
 
@@ -48,7 +49,7 @@
 
     <div class="login-error" id="login-error"></div>
 
-    <p class="login-hint">Demo: legajo <strong>1</strong> · contraseña <strong>admin</strong></p>
+    <!-- <p class="login-hint">Demo: legajo <strong>1</strong> · contraseña <strong>admin</strong></p> -->
   </div>
 </div>
 

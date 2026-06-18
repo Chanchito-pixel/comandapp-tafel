@@ -4,8 +4,10 @@
 <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Dashboard — ComandApp</title>
 <link rel="stylesheet" href="../css/styles.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
 <style>
-  .welcome { font-family:'Playfair Display',serif; font-size:32px; margin-bottom:.5rem; }
+  .welcome { font-family:'Arial',serif; font-size:32px; margin-bottom:.5rem; }
   .welcome span { color:var(--gold-light); }
   .menu-grid {
     display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
@@ -19,7 +21,7 @@
   }
   .menu-card:hover { border-color:var(--gold); background:var(--bg3); transform:translateY(-3px); }
   .mc-icon  { font-size:34px; }
-  .mc-label { font-family:'Playfair Display',serif; font-size:16px; color:var(--gold-light); }
+  .mc-label { font-family:'Arial',serif; font-size:16px; color:var(--gold-light); }
   .mc-desc  { font-size:11px; color:var(--muted); }
 
   /* Stats hoy */
@@ -36,7 +38,7 @@
   .hoy-band-title a { font-size:11px; color:var(--gold-light); text-decoration:none; }
   .hoy-band-title a:hover { color:var(--gold); }
   .hoy-nums { display:flex; gap:1.5rem; flex-wrap:wrap; align-items:center; }
-  .hoy-item .n { font-family:'Playfair Display',serif; font-size:22px; color:var(--gold-light); }
+  .hoy-item .n { font-family:'Arial',serif; font-size:22px; color:var(--gold-light); }
   .hoy-item .l { font-size:11px; color:var(--muted); }
   .hoy-sep { width:1px; height:36px; background:rgba(181,145,74,.2); }
   .mejor-hoy {
@@ -51,6 +53,7 @@
 <header class="topbar">
   <a class="topbar-logo" href="dashboard.html"><div class="topbar-icon">🍽️</div> ComandApp</a>
   <div class="topbar-sep"></div>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Activar modo claro"></button>
   <div class="topbar-user">Bienvenido, <strong id="topbar-name"></strong></div>
   <div class="topbar-avatar" id="topbar-avatar">D</div>
   <span id="topbar-role" class="topbar-role role-owner">Dueño</span>
@@ -60,11 +63,11 @@
 <div class="app-body">
   <nav class="sidebar">
     <div class="sidebar-label">Panel</div>
-    <a class="nav-item active" href="dashboard.html"><span class="ni">🏠</span> Inicio</a>
-    <a class="nav-item" href="usuarios.html"><span class="ni">👥</span> Usuarios</a>
-    <a class="nav-item" href="mesas.html"><span class="ni">🪑</span> Mesas</a>
-    <a class="nav-item" href="menu.html"><span class="ni">🍴</span> Menú</a>
-    <a class="nav-item" href="comandas.html"><span class="ni">📊</span> Comandas</a>
+    <a class="nav-item active" href="dashboard.html"><i class="fa-solid fa-house"></i> Inicio</a>
+    <a class="nav-item" href="usuarios.html"><i class="fa-solid fa-users"></i> Usuarios</a>
+    <a class="nav-item" href="mesas.html"><i class="fa-solid fa-chair"></i> Mesas</a>
+    <a class="nav-item" href="menu.html"><i class="fa-solid fa-burger"></i> Menú</a>
+    <a class="nav-item" href="comandas.html"><i class="fa-solid fa-newspaper"></i> Comandas</a>
   </nav>
 
   <main class="main">
@@ -73,22 +76,22 @@
 
     <div class="menu-grid">
       <a class="menu-card" href="usuarios.html">
-        <div class="mc-icon">👥</div>
+        <div class="mc-icon"><i class="fa-solid fa-users"></i></div>
         <div class="mc-label">Empleados</div>
         <div class="mc-desc">Crear, editar y desactivar usuarios</div>
       </a>
       <a class="menu-card" href="mesas.html">
-        <div class="mc-icon">🪑</div>
+        <div class="mc-icon"><i class="fa-solid fa-chair"></i></div>
         <div class="mc-label">Mesas</div>
         <div class="mc-desc">Gestionar mesas y estados</div>
       </a>
       <a class="menu-card" href="menu.html">
-        <div class="mc-icon">🍴</div>
+        <div class="mc-icon"><i class="fa-solid fa-burger"></i></div>
         <div class="mc-label">Menú</div>
         <div class="mc-desc">Productos, precios y disponibilidad</div>
       </a>
       <a class="menu-card" href="comandas.html">
-        <div class="mc-icon">📊</div>
+        <div class="mc-icon"><i class="fa-solid fa-chart-column"></i></div>
         <div class="mc-label">Comandas</div>
         <div class="mc-desc">Estadísticas y seguimiento</div>
       </a>
@@ -97,7 +100,7 @@
     <!-- Banda de stats de hoy -->
     <div class="hoy-band">
       <div class="hoy-band-title">
-        <span>📊 Resumen de hoy</span>
+        <span><i class="fa-solid fa-chart-column"></i> Resumen de hoy</span>
         <a href="comandas.html">Ver detalle completo →</a>
       </div>
       <div class="hoy-nums">
@@ -130,6 +133,7 @@
 
 <div id="toast" class="toast"></div>
 <script src="../js/api.js"></script>
+<script src="../js/theme.js"></script>
 <script>
 const user = requireAuth(['owner']);
 if (user) {

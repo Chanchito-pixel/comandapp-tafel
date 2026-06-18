@@ -4,6 +4,8 @@
 <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Comandas — ComandApp</title>
 <link rel="stylesheet" href="../css/styles.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
 <style>
   /* ── Tabs de sección ── */
   .section-tabs {
@@ -89,6 +91,7 @@
 <header class="topbar">
   <a class="topbar-logo" href="dashboard.html"><div class="topbar-icon">🍽️</div> ComandApp</a>
   <div class="topbar-sep"></div>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Activar modo claro"></button>
   <div class="topbar-user">Bienvenido, <strong id="topbar-name"></strong></div>
   <div class="topbar-avatar" id="topbar-avatar">D</div>
   <span id="topbar-role" class="topbar-role"></span>
@@ -98,11 +101,11 @@
 <div class="app-body">
   <nav class="sidebar">
     <div class="sidebar-label">Panel</div>
-    <a class="nav-item" href="dashboard.html"><span class="ni">🏠</span> Inicio</a>
-    <a class="nav-item" href="usuarios.html"><span class="ni">👥</span> Usuarios</a>
-    <a class="nav-item" href="mesas.html"><span class="ni">🪑</span> Mesas</a>
-    <a class="nav-item" href="menu.html"><span class="ni">🍴</span> Menú</a>
-    <a class="nav-item active" href="comandas.html"><span class="ni">📊</span> Comandas</a>
+    <a class="nav-item" href="dashboard.html"><i class="fa-solid fa-house"></i> Inicio</a>
+    <a class="nav-item" href="usuarios.html"><i class="fa-solid fa-users"></i> Usuarios</a>
+    <a class="nav-item" href="mesas.html"><i class="fa-solid fa-chair"></i> Mesas</a>
+    <a class="nav-item" href="menu.html"><i class="fa-solid fa-burger"></i> Menú</a>
+    <a class="nav-item active" href="comandas.html"><i class="fa-solid fa-newspaper"></i> Comandas</a>
   </nav>
 
   <main class="main">
@@ -113,9 +116,9 @@
 
     <!-- Tabs de sección -->
     <div class="section-tabs">
-      <button class="stab active" onclick="cambiarTab('hoy',this)">📊 Hoy</button>
-      <button class="stab" onclick="cambiarTab('pago',this)">💳 Cobro</button>
-      <button class="stab" onclick="cambiarTab('historico',this)">📅 Histórico</button>
+      <button class="stab active" onclick="cambiarTab('hoy',this)"><i class="fa-solid fa-chart-column"></i> Hoy</button>
+      <button class="stab" onclick="cambiarTab('pago',this)"><i class="fa-solid fa-credit-card"></i> Cobro</button>
+      <button class="stab" onclick="cambiarTab('historico',this)"><i class="fa-solid fa-calendar"></i> Histórico</button>
     </div>
 
     <!-- ════ TAB: HOY ════ -->
@@ -161,12 +164,12 @@
       <!-- Filtro por estado -->
       <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;">
         <button class="btn btn-sm btn-gold"    id="fp-todas"      onclick="setFiltroPago('todas')">Todas</button>
-        <button class="btn btn-sm btn-outline" id="fp-sin-pagar"  onclick="setFiltroPago('sin-pagar')">💳 Sin pagar</button>
-        <button class="btn btn-sm btn-outline" id="fp-pagas"      onclick="setFiltroPago('pagas')">✓ Pagas</button>
+        <button class="btn btn-sm btn-outline" id="fp-sin-pagar"  onclick="setFiltroPago('sin-pagar')"><i class="fa-solid fa-xmark"></i> Sin pagar</button>
+        <button class="btn btn-sm btn-outline" id="fp-pagas"      onclick="setFiltroPago('pagas')"><i class="fa-solid fa-check"></i> Pagas</button>
       </div>
 
       <div class="comandas-pago-grid" id="grid-pago">
-        <div class="empty"><div class="e-icon">💳</div><p>Cargando...</p></div>
+        <div class="empty"><div class="e-icon"><i class="fa-solid fa-credit-card"></i></div><p>Cargando...</p></div>
       </div>
     </div>
 
@@ -220,6 +223,7 @@
 
 <div id="toast" class="toast"></div>
 <script src="../js/api.js"></script>
+<script src="../js/theme.js"></script>
 <script>
 requireAuth(['owner']); setupTopbar();
 

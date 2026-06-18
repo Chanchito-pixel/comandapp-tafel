@@ -4,6 +4,8 @@
 <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Mesas — ComandApp</title>
 <link rel="stylesheet" href="../css/styles.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
 <style>
   .filter-bar { display:flex; gap:.5rem; margin-bottom:1.25rem; flex-wrap:wrap; }
   .filter-bar button { transition: all .15s; }
@@ -14,6 +16,7 @@
 <header class="topbar">
   <a class="topbar-logo" href="dashboard.html"><div class="topbar-icon">🍽️</div> ComandApp</a>
   <div class="topbar-sep"></div>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Activar modo claro"></button>
   <div class="topbar-user">Hola, <strong id="topbar-name"></strong></div>
   <div class="topbar-avatar" id="topbar-avatar">M</div>
   <span id="topbar-role" class="topbar-role role-mozo">Mozo</span>
@@ -23,9 +26,9 @@
 <div class="app-body">
   <nav class="sidebar">
     <div class="sidebar-label">Mozo</div>
-    <a class="nav-item" href="dashboard.html"><span class="ni">🏠</span> Inicio</a>
-    <a class="nav-item active" href="mesas.html"><span class="ni">🪑</span> Mesas</a>
-    <a class="nav-item" href="comandas-activas.html"><span class="ni">📋</span> Mis comandas</a>
+    <a class="nav-item" href="dashboard.html"><i class="fa-solid fa-house"></i> Inicio</a>
+    <a class="nav-item active" href="mesas.html"><i class="fa-solid fa-chair"></i> Mesas</a>
+    <a class="nav-item" href="comandas-activas.html"><i class="fa-solid fa-newspaper"></i> Mis comandas</a>
   </nav>
 
   <main class="main">
@@ -50,13 +53,14 @@
 
     <!-- Grilla de mesas -->
     <div class="mesas-grid" id="mesas-grid">
-      <div class="empty"><div class="e-icon">🪑</div><p>Cargando mesas...</p></div>
+      <div class="empty"><div class="e-icon"><i class="fa-solid fa-chair"></i></div><p>Cargando mesas...</p></div>
     </div>
   </main>
 </div>
 
 <div id="toast" class="toast"></div>
 <script src="../js/api.js"></script>
+<script src="../js/theme.js"></script>
 <script>
 requireAuth(['mozo']); setupTopbar();
 

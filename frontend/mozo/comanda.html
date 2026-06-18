@@ -4,6 +4,8 @@
 <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Nueva Comanda — ComandApp</title>
 <link rel="stylesheet" href="../css/styles.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
 <style>
   .mesa-info {
     display:flex; align-items:center; gap:1rem;
@@ -83,6 +85,7 @@
 <header class="topbar">
   <a class="topbar-logo" href="mesas.html"><div class="topbar-icon">🍽️</div> ComandApp</a>
   <div class="topbar-sep"></div>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Activar modo claro"></button>
   <div class="topbar-user">Hola, <strong id="topbar-name"></strong></div>
   <div class="topbar-avatar" id="topbar-avatar">M</div>
   <span class="topbar-role role-mozo">Mozo</span>
@@ -92,9 +95,9 @@
 <div class="app-body">
   <nav class="sidebar">
     <div class="sidebar-label">Mozo</div>
-    <a class="nav-item" href="dashboard.html"><span class="ni">🏠</span> Inicio</a>
-    <a class="nav-item active" href="mesas.html"><span class="ni">🪑</span> Mesas</a>
-    <a class="nav-item" href="comandas-activas.html"><span class="ni">📋</span> Mis comandas</a>
+    <a class="nav-item" href="dashboard.html"><i class="fa-solid fa-house"></i> Inicio</a>
+    <a class="nav-item" href="mesas.html"><i class="fa-solid fa-chair"></i> Mesas</a>
+    <a class="nav-item" href="comandas-activas.html"><i class="fa-solid fa-newspaper"></i> Mis comandas</a>
   </nav>
 
   <main class="main" style="display:flex; flex-direction:column;">
@@ -120,7 +123,7 @@
 
     <!-- Grid de productos -->
     <div class="productos-grid" id="productos-grid">
-      <div class="empty"><div class="e-icon">🍴</div><p>Cargando menú...</p></div>
+      <div class="empty"><div class="e-icon"><i class="fa-solid fa-burger"></i></div><p>Cargando menú...</p></div>
     </div>
 
     <!-- Observaciones -->
@@ -131,7 +134,7 @@
 
     <!-- Carrito sticky -->
     <div class="carrito">
-      <div class="card-title" style="margin-bottom:.75rem;">🛒 Comanda actual</div>
+      <div class="card-title" style="margin-bottom:.75rem;"><i class="fa-solid fa-cart-shopping"></i> Comanda actual</div>
       <div class="carrito-items" id="carrito-items">
         <div class="carrito-empty">Tocá un producto para agregarlo</div>
       </div>
@@ -141,7 +144,7 @@
       </div>
       <div class="form-actions" style="margin-top:.75rem;">
         <button class="btn btn-gold btn-lg" style="flex:1;" onclick="enviarComanda()">
-          📤 Enviar comanda a cocina
+          Enviar comanda a cocina
         </button>
         <button class="btn btn-outline" onclick="limpiarCarrito()">↺ Limpiar</button>
       </div>
@@ -151,6 +154,7 @@
 
 <div id="toast" class="toast"></div>
 <script src="../js/api.js"></script>
+<script src="../js/theme.js"></script>
 <script>
 requireAuth(['mozo']); setupTopbar();
 
