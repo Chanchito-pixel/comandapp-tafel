@@ -58,7 +58,7 @@
 // Si ya hay sesión activa, redirigir directo
 const _u = getUser();
 if (_u) {
-  const dest = { owner:'owner/dashboard.html', mozo:'mozo/dashboard.html', cocina:'cocina/dashboard.html' };
+  const dest = { owner:'owner/dashboard.html', mozo:'mozo/dashboard.html', cocina:'cocina/cocina-menu.html' };
   if (dest[_u.rol]) window.location.href = dest[_u.rol];
 }
 
