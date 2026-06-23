@@ -212,9 +212,9 @@ function renderCol(colId, items, estado) {
 
   if (!items.length) {
     const msgs = {
-      pendiente: '<div class="empty"><div class="e-icon" style="font-size:24px;">✓</div><p>Sin pendientes</p></div>',
-      aceptada:  '<div class="empty"><div class="e-icon" style="font-size:24px;">🍳</div><p>Sin comandas</p></div>',
-      lista:     '<div class="empty"><div class="e-icon" style="font-size:24px;">🍽️</div><p>Sin listas</p></div>',
+      pendiente: '<div class="empty"><div class="e-icon" style="font-size:24px;"><i class="fa-solid fa-xmark"></i></div><p>Sin pendientes</p></div>',
+      aceptada:  '<div class="empty"><div class="e-icon" style="font-size:24px;"><i class="fa-solid fa-bowl-food"></i></div><p>Sin comandas</p></div>',
+      lista:     '<div class="empty"><div class="e-icon" style="font-size:24px;"><i class="fa-solid fa-burger"></i></div><p>Sin listas</p></div>',
     };
     col.innerHTML = msgs[estado] || '';
     return;
