@@ -1,43 +1,93 @@
 /* ════════════════════════════════════════════════════════
-   theme.js  —  ComandApp TAFEL · Modo Oscuro / Claro
+   theme.js  —  ComandApp TAFEL · Modo Oscuro / Claro / PRO
    Colocar en: frontend/js/theme.js
    Incluir en cada HTML lo antes posible dentro de <head>:
      · index.html         →  <script src="js/theme.js"></script>
      · mozo/*.html        →  <script src="../js/theme.js"></script>
      · cocina/*.html      →  <script src="../js/theme.js"></script>
      · owner/*.html       →  <script src="../js/theme.js"></script>
+
+   HTML requerido para el botón:
+   ──────────────────────────────────────────────────────────
+   <!-- Botón combinado: clic normal = claro/oscuro · clic largo = PRO -->
+   <button id="theme-toggle" class="theme-toggle" title="Cambiar tema"></button>
+   <button id="pro-toggle"   class="pro-toggle"   title="Modo PRO">PRO</button>
+   ──────────────────────────────────────────────────────────
 ════════════════════════════════════════════════════════ */
 
 /* ── 1. Aplicar tema ANTES de pintar el DOM (evita flash) ── */
 (function () {
-  var saved = localStorage.getItem('comandapp-theme') || 'dark';
+  var saved    = localStorage.getItem('comandapp-theme') || 'dark';
+  var savedPro = localStorage.getItem('comandapp-pro')   || 'off';
   document.documentElement.setAttribute('data-theme', saved);
+  if (savedPro === 'on') {
+    document.documentElement.setAttribute('data-pro', 'on');
+  }
 })();
 
-/* ── 2. Conectar el botón una vez el DOM esté listo ──────── */
+/* ── 2. Conectar botones una vez el DOM esté listo ───────── */
 document.addEventListener('DOMContentLoaded', function () {
-  var btn = document.getElementById('theme-toggle');
-  if (!btn) return;
+  var btnTheme = document.getElementById('theme-toggle');
+  var btnPro   = document.getElementById('pro-toggle');
 
-  // Sincronizar ícono con el tema actual al cargar
-  syncIcon(btn, document.documentElement.getAttribute('data-theme'));
+  /* ── Theme toggle (claro ↔ oscuro) ── */
+  if (btnTheme) {
+    syncThemeIcon(btnTheme, document.documentElement.getAttribute('data-theme'));
+    btnTheme.addEventListener('click', function () {
+      var current = document.documentElement.getAttribute('data-theme');
+      var next    = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('comandapp-theme', next);
+      syncThemeIcon(btnTheme, next);
+    });
+  }
 
-  btn.addEventListener('click', function () {
-    var current = document.documentElement.getAttribute('data-theme');
-    var next    = current === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('comandapp-theme', next);
-    syncIcon(btn, next);
-  });
+  /* ── PRO toggle ── */
+  if (btnPro) {
+    var isPro = document.documentElement.getAttribute('data-pro') === 'on';
+    syncProBtn(btnPro, isPro);
+
+    btnPro.addEventListener('click', function () {
+      var active = document.documentElement.getAttribute('data-pro') === 'on';
+      var next   = active ? null : 'on';
+      if (next) {
+        document.documentElement.setAttribute('data-pro', 'on');
+        localStorage.setItem('comandapp-pro', 'on');
+      } else {
+        document.documentElement.removeAttribute('data-pro');
+        localStorage.setItem('comandapp-pro', 'off');
+      }
+      syncProBtn(btnPro, !!next);
+      spawnProRipple(btnPro);
+    });
+  }
 });
 
 /* ── 3. Helpers ──────────────────────────────────────────── */
-function syncIcon(btn, theme) {
+function syncThemeIcon(btn, theme) {
   btn.setAttribute(
     'aria-label',
     theme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'
   );
   btn.innerHTML = theme === 'dark' ? iconSol() : iconLuna();
+}
+
+function syncProBtn(btn, active) {
+  btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+  btn.setAttribute('aria-label', active ? 'Desactivar modo PRO' : 'Activar modo PRO');
+  if (active) {
+    btn.classList.add('pro-active');
+  } else {
+    btn.classList.remove('pro-active');
+  }
+}
+
+/* Efecto ripple al activar PRO */
+function spawnProRipple(btn) {
+  var r = document.createElement('span');
+  r.className = 'pro-ripple';
+  btn.appendChild(r);
+  setTimeout(function () { r.remove(); }, 700);
 }
 
 function iconSol() {
