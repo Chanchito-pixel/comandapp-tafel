@@ -4,8 +4,6 @@
 <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Cocina — ComandApp</title>
 <link rel="stylesheet" href="../css/styles.css" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
 <style>
   /* Sonido visual de nueva comanda */
   @keyframes entradaNueva {
@@ -38,7 +36,7 @@
     margin-bottom: 1rem; padding-bottom: .6rem;
     border-bottom: 1px solid rgba(181,145,74,.15);
   }
-  .col-hdr-title { font-family:'Arial',serif; font-size:15px; }
+  .col-hdr-title { font-family:'Playfair Display',serif; font-size:15px; }
   .col-hdr-count {
     border-radius: 20px; padding: 2px 8px; font-size: 11px; font-weight: 500;
   }
@@ -83,12 +81,8 @@
 <body class="page-wrapper">
 
 <header class="topbar">
-  <a class="topbar-logo" href="cocina-menu.html"><div class="topbar-icon">🍽️</div> ComandApp</a>
-  <a href="cocina-menu.html" class="btn btn-outline">
-  <span class="mi-icono">←</span> Volver
-  </a>
+  <a class="topbar-logo" href="dashboard.html"><div class="topbar-icon">🍽️</div> ComandApp</a>
   <div class="topbar-sep"></div>
-  <button id="theme-toggle" class="theme-toggle" aria-label="Activar modo claro"></button>
   <div class="topbar-user"><strong id="topbar-name"></strong></div>
   <div class="topbar-avatar" id="topbar-avatar">C</div>
   <span id="topbar-role" class="topbar-role role-cocina">Cocina</span>
@@ -98,7 +92,7 @@
     <span style="width:7px;height:7px;background:var(--success);border-radius:50%;display:inline-block;"></span>
     En vivo
   </span>
-
+  <button class="btn btn-outline btn-sm" id="btn-activar-sonido" onclick="activarSonido()" style="font-size:11px;"> 🔔 Activar sonido </button>
   <button class="btn-logout" onclick="logout()">Salir</button>
 </header>
 
@@ -121,39 +115,39 @@
     <!-- PENDIENTES -->
     <div class="col-wrap">
       <div class="col-hdr">
-        <i class="fa-regular fa-clock"></i>
+        <span style="font-size:18px;">🕐</span>
         <span class="col-hdr-title" style="color:var(--warn);">Pendientes</span>
         <span class="col-hdr-count" id="cnt-pend"
           style="background:rgba(230,126,34,.2); color:var(--warn);">0</span>
       </div>
       <div id="col-pendiente">
-        <div class="empty"><div class="e-icon" style="font-size:24px;"><i class="fa-solid fa-xmark"></i></div><p>Sin pendientes</p></div>
+        <div class="empty"><div class="e-icon" style="font-size:24px;">✓</div><p>Sin pendientes</p></div>
       </div>
     </div>
 
     <!-- EN PREPARACIÓN -->
     <div class="col-wrap">
       <div class="col-hdr">
-        <i class="fa-solid fa-kitchen-set"></i>
+        <span style="font-size:18px;">👨‍🍳</span>
         <span class="col-hdr-title" style="color:var(--gold-light);">En preparación</span>
         <span class="col-hdr-count" id="cnt-acep"
           style="background:rgba(181,145,74,.2); color:var(--gold-light);">0</span>
       </div>
       <div id="col-aceptada">
-        <div class="empty"><div class="e-icon" style="font-size:24px;"><i class="fa-solid fa-bowl-food"></i></div><p>Sin comandas</p></div>
+        <div class="empty"><div class="e-icon" style="font-size:24px;">🍳</div><p>Sin comandas</p></div>
       </div>
     </div>
 
     <!-- LISTAS -->
     <div class="col-wrap">
       <div class="col-hdr">
-        <i class="fa-solid fa-bell"></i>
+        <span style="font-size:18px;">🔔</span>
         <span class="col-hdr-title" style="color:#74b9e7;">Listas</span>
         <span class="col-hdr-count" id="cnt-list"
           style="background:rgba(52,152,219,.2); color:#74b9e7;">0</span>
       </div>
       <div id="col-lista">
-        <div class="empty"><div class="e-icon" style="font-size:24px;"><i class="fa-solid fa-burger"></i></div><p>Sin listas</p></div>
+        <div class="empty"><div class="e-icon" style="font-size:24px;">🍽️</div><p>Sin listas</p></div>
       </div>
     </div>
 
@@ -162,13 +156,69 @@
 
 <div id="toast" class="toast"></div>
 <script src="../js/api.js"></script>
-<script src="../js/theme.js"></script>
-<script src="/socket.io/socket.io.js"></script>
+<script src="http://localhost:3000/socket.io/socket.io.js"></script>
 <script>
 requireAuth(['cocina']); setupTopbar();
 
 let _data = [];
+let _alarmInterval = null;
 
+function beep() {
+  const ctx  = new (window.AudioContext || window.webkitAudioContext)();
+  const osc  = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.type = 'sine';
+  osc.frequency.value = 880;
+  gain.gain.value = 0.3;
+  osc.start();
+  setTimeout(() => { osc.stop(); ctx.close(); }, 300);
+}
+let _sonidoActivado = false;
+
+function activarSonido() {
+  beep();
+  _sonidoActivado = true;
+  const btn = document.getElementById('btn-activar-sonido');
+  btn.textContent = '🔔 Sonido activo ✓';
+  btn.disabled = true;
+  btn.style.opacity = '.5';
+  toast('Sonido activado correctamente', 'success');
+}
+function checkAlarm() {
+  if (!_sonidoActivado) return;
+  const hayPendientes = _data.some(c => c.estado === 'pendiente');
+  if (hayPendientes && !_alarmInterval) {
+    beep();
+    _alarmInterval = setInterval(beep, 3000);
+  } else if (!hayPendientes && _alarmInterval) {
+    clearInterval(_alarmInterval);
+    _alarmInterval = null;
+  }
+}
+
+function beep() {
+  const ctx  = new (window.AudioContext || window.webkitAudioContext)();
+  const osc  = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.type = 'sine';
+  osc.frequency.value = 880;
+  gain.gain.value = 0.3;
+  osc.start();
+  setTimeout(() => { osc.stop(); ctx.close(); }, 300);
+}
+
+function checkAlarm() {
+  const hayPendientes = _data.some(c => c.estado === 'pendiente');
+  if (hayPendientes && !_alarmInterval) {
+    beep();
+    _alarmInterval = setInterval(beep, 3000); // repite cada 3 segundos
+  } else if (!hayPendientes && _alarmInterval) {
+    clearInterval(_alarmInterval);
+    _alarmInterval = null;
+  }
+}
 // ── Cargar comandas activas ───────────────────────────────
 async function cargar() {
   try {
@@ -194,6 +244,7 @@ function render() {
   renderCol('col-pendiente', pend, 'pendiente');
   renderCol('col-aceptada',  acep, 'aceptada');
   renderCol('col-lista',     list, 'lista');
+  checkAlarm();
 }
 
 function timerClass(fecha) {
@@ -212,9 +263,9 @@ function renderCol(colId, items, estado) {
 
   if (!items.length) {
     const msgs = {
-      pendiente: '<div class="empty"><div class="e-icon" style="font-size:24px;"><i class="fa-solid fa-xmark"></i></div><p>Sin pendientes</p></div>',
-      aceptada:  '<div class="empty"><div class="e-icon" style="font-size:24px;"><i class="fa-solid fa-bowl-food"></i></div><p>Sin comandas</p></div>',
-      lista:     '<div class="empty"><div class="e-icon" style="font-size:24px;"><i class="fa-solid fa-burger"></i></div><p>Sin listas</p></div>',
+      pendiente: '<div class="empty"><div class="e-icon" style="font-size:24px;">✓</div><p>Sin pendientes</p></div>',
+      aceptada:  '<div class="empty"><div class="e-icon" style="font-size:24px;">🍳</div><p>Sin comandas</p></div>',
+      lista:     '<div class="empty"><div class="e-icon" style="font-size:24px;">🍽️</div><p>Sin listas</p></div>',
     };
     col.innerHTML = msgs[estado] || '';
     return;
@@ -299,7 +350,7 @@ async function cambiarEstado(id, estado) {
 }
 
 // ── Socket.IO — recibe nuevas comandas en tiempo real ─────
-const socket = io();
+const socket = io('http://localhost:3000');
 socket.emit('join', 'cocina');
 
 socket.on('nueva-comanda', (comanda) => {
@@ -338,3 +389,5 @@ setInterval(() => { if (_data.length) render(); }, 60000);
 </script>
 </body>
 </html>
+
+// test //
