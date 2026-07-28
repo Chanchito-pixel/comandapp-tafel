@@ -83,10 +83,8 @@
 <body class="page-wrapper">
 
 <header class="topbar">
+  <button class="hamburger-btn" onclick="abrirNav()" aria-label="Menú">&#9776;</button>
   <a class="topbar-logo" href="cocina-menu.html"><div class="topbar-icon">🍽️</div> ComandApp</a>
-  <a href="cocina-menu.html" class="btn btn-outline">
-  <span class="mi-icono">←</span> Volver
-  </a>
   <div class="topbar-sep"></div>
   <button id="theme-toggle" class="theme-toggle" aria-label="Activar modo claro"></button>
   <div class="topbar-user"><strong id="topbar-name"></strong></div>
@@ -94,14 +92,26 @@
   <span id="topbar-role" class="topbar-role role-cocina">Cocina</span>
 
   <!-- Indicador en vivo -->
-  <span style="font-size:11px; color:var(--muted); display:flex; align-items:center; gap:.4rem;">
+  <span style="font-size:11px; color:var(--muted); display:flex; align-items:center; gap:.4rem; flex-shrink:0;">
     <span style="width:7px;height:7px;background:var(--success);border-radius:50%;display:inline-block;"></span>
     En vivo
   </span>
 
-  <button class="btn btn-outline btn-sm" id="btn-activar-sonido" onclick="activarSonido()" style="font-size:11px;"> 🔔 Activar sonido </button>
+  <button class="btn btn-outline btn-sm" id="btn-activar-sonido" onclick="activarSonido()" style="font-size:11px; flex-shrink:0;"> 🔔 Activar sonido </button>
   <button class="btn-logout" onclick="logout()">Salir</button>
 </header>
+
+<!-- Navegación móvil -->
+<div class="mobile-nav-overlay" id="nav-overlay" onclick="cerrarNav()"></div>
+<div class="mobile-nav-drawer" id="nav-drawer">
+  <button class="mobile-nav-drawer-close" onclick="cerrarNav()">✕</button>
+  <div class="sidebar-label">Cocina</div>
+  <a class="nav-item active" href="dashboard.html"><span class="ni"><i class="fa-solid fa-newspaper"></i></span> Comandas</a>
+  <a class="nav-item" href="cocina-menu.html"><span class="ni"><i class="fa-solid fa-plate-wheat"></i></span> Platos</a>
+  <div class="sidebar-label" style="margin-top:.8rem;">Acciones</div>
+  <button class="nav-item" onclick="cerrarNav(); activarSonido()"><span class="ni">🔔</span> Activar sonido</button>
+  <button class="nav-item" onclick="logout()"><span class="ni"><i class="fa-solid fa-right-from-bracket"></i></span> Salir</button>
+</div>
 
 <!-- Notificación flotante de nueva comanda -->
 <div id="notif-overlay">🔔 ¡Nueva comanda ingresada!</div>
@@ -168,6 +178,15 @@
 <script>
 requireAuth(['cocina']); setupTopbar();
 
+function abrirNav() {
+  document.getElementById('nav-drawer').classList.add('open');
+  document.getElementById('nav-overlay').classList.add('open');
+}
+function cerrarNav() {
+  document.getElementById('nav-drawer').classList.remove('open');
+  document.getElementById('nav-overlay').classList.remove('open');
+}
+
 let _data = [];
 let _alarmInterval = null;
 
@@ -198,7 +217,7 @@ function checkAlarm() {
   const hayPendientes = _data.some(c => c.estado === 'pendiente');
   if (hayPendientes && !_alarmInterval) {
     beep();
-    _alarmInterval = setInterval(beep, 3000);
+    _alarmInterval = setInterval(beep, 1500);
   } else if (!hayPendientes && _alarmInterval) {
     clearInterval(_alarmInterval);
     _alarmInterval = null;

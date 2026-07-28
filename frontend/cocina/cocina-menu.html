@@ -38,6 +38,7 @@
 <body class="page-wrapper">
 
 <header class="topbar">
+  <button class="hamburger-btn" onclick="abrirNav()" aria-label="Menú">&#9776;</button>
   <a class="topbar-logo" href="cocina-menu.html"><div class="topbar-icon">🍽️</div> ComandApp</a>
   <div class="topbar-sep"></div>
   <button id="theme-toggle" class="theme-toggle" aria-label="Activar modo claro"></button>
@@ -46,6 +47,15 @@
   <span class="topbar-role role-cocina">Cocina</span>
   <button class="btn-logout" onclick="logout()">Salir</button>
 </header>
+
+<!-- Navegación móvil -->
+<div class="mobile-nav-overlay" id="nav-overlay" onclick="cerrarNav()"></div>
+<div class="mobile-nav-drawer" id="nav-drawer">
+  <button class="mobile-nav-drawer-close" onclick="cerrarNav()">✕</button>
+  <div class="sidebar-label">Cocina</div>
+  <a class="nav-item" href="dashboard.html"><span class="ni"><i class="fa-solid fa-newspaper"></i></span> Comandas</a>
+  <a class="nav-item active" href="cocina-menu.html"><span class="ni"><i class="fa-solid fa-plate-wheat"></i></span> Platos</a>
+</div>
 
 <div class="app-body">
   <nav class="sidebar">
@@ -81,6 +91,15 @@
 <script src="../js/theme.js"></script>
 <script>
 requireAuth(['cocina']); setupTopbar();
+
+function abrirNav() {
+  document.getElementById('nav-drawer').classList.add('open');
+  document.getElementById('nav-overlay').classList.add('open');
+}
+function cerrarNav() {
+  document.getElementById('nav-drawer').classList.remove('open');
+  document.getElementById('nav-overlay').classList.remove('open');
+}
 
 let _menu = []; let _cat = 'all';
 

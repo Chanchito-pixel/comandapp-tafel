@@ -1236,12 +1236,103 @@ tbody td { padding: .75rem .9rem; vertical-align: middle; }
 /* ══════════════════════════════════════════════════════
    RESPONSIVE
 ══════════════════════════════════════════════════════ */
+
+/* Fix global: evitar scroll horizontal en móvil */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Avatar siempre circular */
+.topbar-avatar {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  border-radius: 50% !important;
+  flex-shrink: 0 !important;
+  aspect-ratio: 1 / 1 !important;
+}
+
+/* ── Hamburguesa ── */
+.hamburger-btn {
+  display: none;
+  background: none;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  color: var(--gold-light);
+  cursor: pointer;
+  padding: .4rem .55rem;
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* Menú móvil (drawer lateral) */
+.mobile-nav-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--modal-overlay);
+  z-index: 200;
+}
+.mobile-nav-overlay.open { display: block; }
+
+.mobile-nav-drawer {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: 240px;
+  background: var(--bg2);
+  border-right: 1px solid var(--sidebar-border);
+  padding: 1.2rem .8rem;
+  display: flex; flex-direction: column; gap: .15rem;
+  z-index: 201;
+  transform: translateX(-100%);
+  transition: transform .25s ease;
+}
+.mobile-nav-drawer.open { transform: translateX(0); }
+
+.mobile-nav-drawer .sidebar-label {
+  font-size: 10px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: .5rem .85rem .3rem;
+  opacity: .7;
+}
+.mobile-nav-drawer .nav-item {
+  display: flex; align-items: center; gap: .7rem;
+  padding: .75rem .9rem; border-radius: var(--radius);
+  color: var(--muted); font-size: 14px;
+  cursor: pointer; border: none; background: transparent;
+  width: 100%; text-decoration: none;
+}
+.mobile-nav-drawer .nav-item.active {
+  background: rgba(181,145,74,.16);
+  color: var(--gold-light);
+}
+.mobile-nav-drawer-close {
+  align-self: flex-end;
+  background: none; border: none;
+  color: var(--muted); font-size: 20px;
+  cursor: pointer; margin-bottom: .5rem; padding: .2rem .4rem;
+}
+
 @media (max-width: 768px) {
   .sidebar { display: none; }
   .main { padding: 1.1rem; }
   .big-btn-grid { grid-template-columns: 1fr; max-width: 320px; }
   .form-grid { grid-template-columns: 1fr; }
   .btn-back-mobile { display: block; }
+  .hamburger-btn { display: flex; align-items: center; justify-content: center; }
+
+  /* Topbar: ocultar elementos verbosos, mostrar sólo lo esencial */
+  .topbar { padding: 0 .9rem; gap: .6rem; }
+  .topbar-user { display: none; }
+  .topbar-role { display: none; }
+
+  /* El topbar no debe causar overflow */
+  .topbar { overflow: hidden; }
 }
 
 /* ══════════════════════════════════════════════════════
