@@ -11,7 +11,7 @@ const router = express.Router();
 const SELECT_COMANDA = `
   SELECT
     c.id, c.estado, c.observaciones, c.total, c.pagada,
-    c.creado_en, c.actualizado_en,
+    c.creado_en, c.actualizado_en, c.aceptada_en, c.lista_en,
     m.id        AS mesa_id,
     m.numero    AS mesa_numero,
     e.id        AS mozo_id,
@@ -49,7 +49,7 @@ router.get('/', verificarToken, soloRoles('owner', 'cocina'), async (req, res) =
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// GET /api/comandas/todas-hoy — activas + entregadas de hoy (para cobro del dueño)
+// GET /api/comandas/todas-hoy
 router.get('/todas-hoy', verificarToken, soloRoles('owner'), async (req, res) => {
   try {
     const { rows } = await pool.query(
@@ -80,8 +80,7 @@ router.get('/stats/hoy', verificarToken, soloRoles('owner'), async (req, res) =>
       `),
       pool.query(`
         SELECT e.nombre, e.apellido, COUNT(c.id) AS total
-        FROM comandas c
-        JOIN empleados e ON c.id_mozo = e.id
+        FROM comandas c JOIN empleados e ON c.id_mozo = e.id
         WHERE c.creado_en >= CURRENT_DATE AND c.estado != 'rechazada'
         GROUP BY e.id, e.nombre, e.apellido
         ORDER BY total DESC LIMIT 1
@@ -91,7 +90,7 @@ router.get('/stats/hoy', verificarToken, soloRoles('owner'), async (req, res) =>
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// GET /api/comandas/stats/historico?desde=YYYY-MM-DD&hasta=YYYY-MM-DD
+// GET /api/comandas/stats/historico?desde=&hasta=
 router.get('/stats/historico', verificarToken, soloRoles('owner'), async (req, res) => {
   const desde = req.query.desde || new Date(Date.now()-30*86400000).toISOString().slice(0,10);
   const hasta = req.query.hasta || new Date().toISOString().slice(0,10);
@@ -128,6 +127,105 @@ router.get('/stats/historico', verificarToken, soloRoles('owner'), async (req, r
       `, [desde, hasta])
     ]);
     res.json({ desde, hasta, totales: totales.rows[0], por_dia: porDia.rows, empleados: porEmpleado.rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// GET /api/comandas/stats/mozos?desde=&hasta=
+// Estadísticas detalladas por mozo (solo owner)
+router.get('/stats/mozos', verificarToken, soloRoles('owner'), async (req, res) => {
+  const desde = req.query.desde || new Date(Date.now()-30*86400000).toISOString().slice(0,10);
+  const hasta = req.query.hasta || new Date().toISOString().slice(0,10);
+  try {
+    const { rows } = await pool.query(`
+      SELECT
+        e.id,
+        e.nombre,
+        e.apellido,
+        COUNT(c.id)                                                        AS total_comandas,
+        COUNT(c.id) FILTER (WHERE c.estado = 'entregada')                 AS entregadas,
+        COUNT(c.id) FILTER (WHERE c.estado = 'rechazada')                 AS rechazadas,
+        COUNT(c.id) FILTER (WHERE c.estado IN ('pendiente','aceptada','lista')) AS activas,
+        COALESCE(SUM(c.total) FILTER (WHERE c.estado = 'entregada'), 0)   AS monto_total,
+        COALESCE(AVG(c.total) FILTER (WHERE c.estado = 'entregada'), 0)   AS promedio_comanda,
+        COALESCE(SUM(c.total) FILTER (WHERE c.estado = 'entregada' AND c.pagada = TRUE), 0) AS monto_cobrado,
+        -- Tasa de éxito: entregadas / (entregadas + rechazadas)
+        CASE
+          WHEN COUNT(c.id) FILTER (WHERE c.estado IN ('entregada','rechazada')) = 0 THEN 100
+          ELSE ROUND(
+            COUNT(c.id) FILTER (WHERE c.estado = 'entregada')::numeric /
+            COUNT(c.id) FILTER (WHERE c.estado IN ('entregada','rechazada'))::numeric * 100, 1
+          )
+        END AS tasa_exito
+      FROM empleados e
+      LEFT JOIN comandas c
+        ON c.id_mozo = e.id
+        AND c.creado_en >= $1
+        AND c.creado_en < $2::date + INTERVAL '1 day'
+      WHERE e.rol = 'mozo' AND e.activo = TRUE
+      GROUP BY e.id, e.nombre, e.apellido
+      ORDER BY total_comandas DESC
+    `, [desde, hasta]);
+    res.json({ desde, hasta, mozos: rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// GET /api/comandas/stats/cocina?desde=&hasta=
+// Tiempos de cocina (solo owner)
+router.get('/stats/cocina', verificarToken, soloRoles('owner'), async (req, res) => {
+  const desde = req.query.desde || new Date(Date.now()-30*86400000).toISOString().slice(0,10);
+  const hasta = req.query.hasta || new Date().toISOString().slice(0,10);
+  try {
+    const [tiempos, porDia] = await Promise.all([
+      // Promedios globales del período
+      pool.query(`
+        SELECT
+          COUNT(*) FILTER (WHERE estado IN ('lista','entregada'))              AS total_procesadas,
+          COUNT(*) FILTER (WHERE aceptada_en IS NOT NULL)                      AS con_tiempo_respuesta,
+          COUNT(*) FILTER (WHERE lista_en IS NOT NULL)                         AS con_tiempo_preparacion,
+          -- Tiempo respuesta: desde que llega hasta que cocina acepta
+          ROUND(AVG(
+            EXTRACT(EPOCH FROM (aceptada_en - creado_en)) / 60.0
+          ) FILTER (WHERE aceptada_en IS NOT NULL), 1)                         AS avg_min_respuesta,
+          -- Tiempo preparación: desde que acepta hasta que marca como lista
+          ROUND(AVG(
+            EXTRACT(EPOCH FROM (lista_en - aceptada_en)) / 60.0
+          ) FILTER (WHERE lista_en IS NOT NULL AND aceptada_en IS NOT NULL), 1) AS avg_min_preparacion,
+          -- Tiempo total: desde que llega hasta que está lista
+          ROUND(AVG(
+            EXTRACT(EPOCH FROM (lista_en - creado_en)) / 60.0
+          ) FILTER (WHERE lista_en IS NOT NULL), 1)                            AS avg_min_total,
+          -- Máximos
+          ROUND(MAX(
+            EXTRACT(EPOCH FROM (lista_en - creado_en)) / 60.0
+          ) FILTER (WHERE lista_en IS NOT NULL), 1)                            AS max_min_total,
+          -- Mínimos
+          ROUND(MIN(
+            EXTRACT(EPOCH FROM (lista_en - creado_en)) / 60.0
+          ) FILTER (WHERE lista_en IS NOT NULL), 1)                            AS min_min_total
+        FROM comandas
+        WHERE creado_en >= $1 AND creado_en < $2::date + INTERVAL '1 day'
+      `, [desde, hasta]),
+
+      // Promedio por día
+      pool.query(`
+        SELECT
+          DATE(creado_en) AS fecha,
+          COUNT(*) FILTER (WHERE estado IN ('lista','entregada')) AS procesadas,
+          ROUND(AVG(
+            EXTRACT(EPOCH FROM (lista_en - creado_en)) / 60.0
+          ) FILTER (WHERE lista_en IS NOT NULL), 1) AS avg_min_total
+        FROM comandas
+        WHERE creado_en >= $1 AND creado_en < $2::date + INTERVAL '1 day'
+        GROUP BY DATE(creado_en)
+        ORDER BY fecha DESC
+      `, [desde, hasta])
+    ]);
+
+    res.json({
+      desde, hasta,
+      tiempos:  tiempos.rows[0],
+      por_dia:  porDia.rows
+    });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
@@ -178,7 +276,10 @@ router.post('/', verificarToken, soloRoles('owner', 'mozo'), async (req, res) =>
       const { rows: [prod] } = await client.query(
         'SELECT precio FROM menu WHERE id=$1 AND disponible=TRUE', [item.id_producto]
       );
-      if (!prod) { await client.query('ROLLBACK'); return res.status(400).json({ error: `Producto ${item.id_producto} no disponible` }); }
+      if (!prod) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ error: `Producto ${item.id_producto} no disponible` });
+      }
       await client.query(
         `INSERT INTO detalle_comanda (id_comanda, id_producto, cantidad, precio_unidad) VALUES ($1,$2,$3,$4)`,
         [comanda.id, item.id_producto, item.cantidad, prod.precio]
@@ -188,7 +289,9 @@ router.post('/', verificarToken, soloRoles('owner', 'mozo'), async (req, res) =>
     await client.query('UPDATE comandas SET total=$1 WHERE id=$2', [total, comanda.id]);
     await client.query("UPDATE mesas SET estado='ocupada' WHERE id=$1", [id_mesa]);
     await client.query('COMMIT');
-    const { rows: [completa] } = await pool.query(SELECT_COMANDA + `WHERE c.id=$1 GROUP BY c.id,m.id,e.id`, [comanda.id]);
+    const { rows: [completa] } = await pool.query(
+      SELECT_COMANDA + `WHERE c.id=$1 GROUP BY c.id,m.id,e.id`, [comanda.id]
+    );
     io.to('cocina').emit('nueva-comanda', completa);
     res.status(201).json(completa);
   } catch (err) {
@@ -198,19 +301,47 @@ router.post('/', verificarToken, soloRoles('owner', 'mozo'), async (req, res) =>
 });
 
 // PUT /api/comandas/:id/estado
+// Guarda aceptada_en y lista_en para calcular tiempos de cocina
 router.put('/:id/estado', verificarToken, soloRoles('cocina','mozo','owner'), async (req, res) => {
-  const { estado } = req.body;
-  const { id }     = req.params;
-  const io         = req.app.get('io');
+  const { estado, comentario_cocina } = req.body;
+  const { id } = req.params;
+  const io     = req.app.get('io');
+
   if (!['aceptada','rechazada','lista','entregada'].includes(estado)) {
     return res.status(400).json({ error: 'Estado inválido' });
   }
+
   try {
+    // Arma SET dinámico con los timestamps según el estado
+    let extraSet    = '';
+    let extraParams = [];
+
+    if (estado === 'aceptada') {
+      extraSet = ', aceptada_en = NOW()';
+    } else if (estado === 'lista') {
+      extraSet = ', lista_en = NOW()';
+    }
+
+    // Agrega comentario de cocina si viene
+    let paramOffset = 2;
+    let comentarioSet = '';
+    if (comentario_cocina !== undefined) {
+      paramOffset++;
+      comentarioSet = `, comentario_cocina = $${paramOffset}`;
+      extraParams.push(comentario_cocina || null);
+    }
+
     const { rows } = await pool.query(
-      `UPDATE comandas SET estado=$1, actualizado_en=NOW() WHERE id=$2 RETURNING *`, [estado, id]
+      `UPDATE comandas
+         SET estado=$1, actualizado_en=NOW()${extraSet}${comentarioSet}
+       WHERE id=$2
+       RETURNING *`,
+      [estado, id, ...extraParams]
     );
+
     if (!rows[0]) return res.status(404).json({ error: 'Comanda no encontrada' });
     const comanda = rows[0];
+
     if (estado === 'entregada') {
       const { rows: activas } = await pool.query(
         `SELECT COUNT(*) FROM comandas WHERE id_mesa=$1 AND estado NOT IN ('entregada','rechazada')`,
@@ -220,10 +351,73 @@ router.put('/:id/estado', verificarToken, soloRoles('cocina','mozo','owner'), as
         await pool.query("UPDATE mesas SET estado='libre' WHERE id=$1", [comanda.id_mesa]);
       }
     }
-    io.to(`mozo-${comanda.id_mozo}`).emit('comanda-actualizada', { id: comanda.id, estado, id_mesa: comanda.id_mesa });
+
+    io.to(`mozo-${comanda.id_mozo}`).emit('comanda-actualizada', {
+      id: comanda.id, estado,
+      comentario_cocina: comanda.comentario_cocina,
+      id_mesa: comanda.id_mesa
+    });
     io.to('cocina').emit('comanda-actualizada', { id: comanda.id, estado });
+
     res.json({ mensaje: 'Estado actualizado', id: parseInt(id), estado });
   } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// PUT /api/comandas/:id/items — mozo modifica ítems de comanda pendiente o aceptada
+router.put('/:id/items', verificarToken, soloRoles('owner','mozo'), async (req, res) => {
+  const { items, observaciones } = req.body;
+  const { id } = req.params;
+  const io     = req.app.get('io');
+
+  if (!items?.length) return res.status(400).json({ error: 'Debe haber al menos un ítem' });
+
+  const client = await pool.connect();
+  try {
+    const { rows: [comanda] } = await client.query('SELECT * FROM comandas WHERE id=$1', [id]);
+    if (!comanda) return res.status(404).json({ error: 'Comanda no encontrada' });
+
+    // Permite modificar pendiente O aceptada (no lista ni entregada)
+    if (!['pendiente','aceptada'].includes(comanda.estado)) {
+      return res.status(400).json({ error: 'Solo se pueden modificar comandas pendientes o aceptadas' });
+    }
+
+    await client.query('BEGIN');
+    await client.query('DELETE FROM detalle_comanda WHERE id_comanda=$1', [id]);
+
+    let total = 0;
+    for (const item of items) {
+      const { rows: [prod] } = await client.query(
+        'SELECT precio FROM menu WHERE id=$1 AND disponible=TRUE', [item.id_producto]
+      );
+      if (!prod) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ error: `Producto ${item.id_producto} no disponible` });
+      }
+      await client.query(
+        `INSERT INTO detalle_comanda (id_comanda, id_producto, cantidad, precio_unidad) VALUES ($1,$2,$3,$4)`,
+        [id, item.id_producto, item.cantidad, prod.precio]
+      );
+      total += prod.precio * item.cantidad;
+    }
+
+    // Si la comanda estaba paga y se modificó, vuelve a no paga
+    await client.query(
+      `UPDATE comandas SET total=$1, observaciones=$2, pagada=FALSE, actualizado_en=NOW() WHERE id=$3`,
+      [total, observaciones !== undefined ? observaciones : comanda.observaciones, id]
+    );
+
+    await client.query('COMMIT');
+
+    const { rows: [completa] } = await pool.query(
+      SELECT_COMANDA + `WHERE c.id=$1 GROUP BY c.id,m.id,e.id`, [id]
+    );
+
+    io.to('cocina').emit('comanda-modificada', completa);
+    res.json(completa);
+  } catch (err) {
+    await client.query('ROLLBACK');
+    res.status(500).json({ error: err.message });
+  } finally { client.release(); }
 });
 
 // PUT /api/comandas/:id/pagar

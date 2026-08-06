@@ -4,10 +4,8 @@
 <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Comandas — ComandApp</title>
 <link rel="stylesheet" href="../css/styles.css" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
 <style>
-  /* ── Tabs de sección ── */
+  /* ── Tabs ── */
   .section-tabs {
     display:flex; gap:.5rem; margin-bottom:1.5rem;
     border-bottom:1px solid rgba(181,145,74,.15); padding-bottom:0;
@@ -20,16 +18,12 @@
   }
   .stab.active { color:var(--gold-light); border-bottom-color:var(--gold); }
   .stab:hover  { color:var(--text); }
-
   .section { display:none; }
   .section.active { display:block; }
 
   /* ── Stats hoy ── */
   .big-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:1rem; margin-bottom:1.5rem; }
-  .big-stat {
-    background:var(--bg2); border:1px solid rgba(181,145,74,.15);
-    border-radius:var(--radius-lg); padding:1.1rem 1.3rem;
-  }
+  .big-stat { background:var(--bg2); border:1px solid rgba(181,145,74,.15); border-radius:var(--radius-lg); padding:1.1rem 1.3rem; }
   .big-stat.destacado { border-color:rgba(181,145,74,.38); }
   .big-stat .num { font-family:'Playfair Display',serif; font-size:28px; color:var(--gold-light); line-height:1; }
   .big-stat .lbl { font-size:12px; color:var(--muted); margin-top:.25rem; }
@@ -42,19 +36,14 @@
     display:flex; align-items:center; gap:.75rem; margin-bottom:1.5rem;
   }
 
-  /* ── Comandas activas (para pagar) ── */
+  /* ── Cobro ── */
   .comandas-pago-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:.9rem; }
-  .cpago-card {
-    background:var(--bg2); border:1px solid rgba(181,145,74,.15);
-    border-radius:var(--radius-lg); padding:1rem 1.1rem;
-  }
+  .cpago-card { background:var(--bg2); border:1px solid rgba(181,145,74,.15); border-radius:var(--radius-lg); padding:1rem 1.1rem; }
   .cpago-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:.6rem; }
   .cpago-mesa   { font-family:'Playfair Display',serif; font-size:17px; }
   .cpago-mozo   { font-size:11px; color:var(--muted); margin-bottom:.5rem; }
-  .cpago-items  { font-size:12px; color:var(--muted); margin-bottom:.6rem; line-height:1.7; }
   .cpago-footer { display:flex; align-items:center; justify-content:space-between; margin-top:.65rem; flex-wrap:wrap; gap:.5rem; }
   .cpago-total  { font-family:'Playfair Display',serif; font-size:18px; color:var(--gold-light); }
-
   .paga-toggle {
     display:inline-flex; align-items:center; gap:.4rem;
     padding:.35rem .85rem; border-radius:20px; font-size:12px; font-weight:500;
@@ -62,10 +51,10 @@
   }
   .paga-toggle.no-paga { background:rgba(192,57,43,.15); color:#e57373; }
   .paga-toggle.no-paga:hover { background:rgba(192,57,43,.28); }
-  .paga-toggle.paga     { background:rgba(39,174,96,.2); color:#6fd993; }
+  .paga-toggle.paga     { background:rgba(39,174,96,.2);  color:#6fd993; }
   .paga-toggle.paga:hover { background:rgba(39,174,96,.35); }
 
-  /* ── Filtro histórico ── */
+  /* ── Filtro fechas compartido ── */
   .filtro-bar {
     display:flex; gap:.75rem; align-items:flex-end; flex-wrap:wrap;
     background:var(--bg2); border:1px solid rgba(181,145,74,.13);
@@ -74,16 +63,60 @@
   .filtro-bar label { font-size:11px; color:var(--muted); display:block; margin-bottom:.3rem; }
   .filtro-bar input[type=date] { width:150px; }
 
-  /* ── Histórico tabla / ranking ── */
+  /* ── Histórico ── */
   .hist-cols { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
   @media(max-width:700px) { .hist-cols { grid-template-columns:1fr; } }
-
   .ranking-lista { list-style:none; padding:0; margin:0; }
   .ranking-item  { display:flex; align-items:center; gap:.65rem; padding:.5rem .4rem; border-bottom:1px solid rgba(255,255,255,.04); }
   .rank-pos    { font-family:'Playfair Display',serif; font-size:16px; color:var(--gold-light); min-width:22px; }
   .rank-nombre { flex:1; font-size:13px; }
   .rank-total  { font-size:11px; color:var(--muted); }
   .rank-monto  { font-size:13px; color:var(--gold-light); font-weight:500; }
+
+  /* ── Estadísticas mozos ── */
+  .mozo-card {
+    background:var(--bg2); border:1px solid rgba(181,145,74,.13);
+    border-radius:var(--radius-lg); padding:1.1rem 1.3rem; margin-bottom:.9rem;
+  }
+  .mozo-card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:.85rem; }
+  .mozo-nombre { font-family:'Playfair Display',serif; font-size:16px; }
+  .mozo-stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:.65rem; }
+  .mstat { background:rgba(255,255,255,.03); border-radius:8px; padding:.6rem .75rem; }
+  .mstat .n { font-family:'Playfair Display',serif; font-size:18px; color:var(--gold-light); }
+  .mstat .l { font-size:10px; color:var(--muted); margin-top:.15rem; }
+  .tasa-badge {
+    padding:.25rem .7rem; border-radius:20px; font-size:12px; font-weight:500;
+  }
+  .tasa-alta  { background:rgba(39,174,96,.2);  color:#6fd993; }
+  .tasa-media { background:rgba(230,126,34,.2); color:#f0a060; }
+  .tasa-baja  { background:rgba(192,57,43,.2);  color:#e57373; }
+
+  /* ── Estadísticas cocina ── */
+  .tiempo-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:.85rem; margin-bottom:1.25rem; }
+  .tcard { background:var(--bg2); border:1px solid rgba(181,145,74,.13); border-radius:var(--radius-lg); padding:1rem 1.1rem; }
+  .tcard .n { font-family:'Playfair Display',serif; font-size:24px; color:var(--gold-light); }
+  .tcard .l { font-size:11px; color:var(--muted); margin-top:.2rem; }
+
+  /* Barra de producto */
+  .prod-bar-wrap { margin-bottom:.6rem; }
+  .prod-bar-header { display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:.25rem; }
+  .prod-bar-nombre { flex:1; }
+  .prod-bar-val    { color:var(--gold-light); font-weight:500; }
+  .prod-bar-bg     { background:rgba(255,255,255,.06); border-radius:4px; height:6px; overflow:hidden; }
+  .prod-bar-fill   { height:100%; background:var(--gold); border-radius:4px; transition:width .4s; }
+  .prod-bar-cat    { font-size:10px; color:var(--muted); }
+
+  /* Sub-tabs dentro de Estadísticas */
+  .sub-tabs { display:flex; gap:.4rem; margin-bottom:1.25rem; flex-wrap:wrap; }
+  .subtab {
+    padding:.45rem .9rem; font-size:12.5px; font-weight:500;
+    cursor:pointer; border:1px solid rgba(181,145,74,.22);
+    border-radius:20px; background:transparent; color:var(--muted);
+    transition:all .18s;
+  }
+  .subtab.active { background:var(--gold); color:#1a1510; border-color:var(--gold); }
+  .subsection { display:none; }
+  .subsection.active { display:block; }
 </style>
 </head>
 <body class="page-wrapper">
@@ -91,8 +124,6 @@
 <header class="topbar">
   <a class="topbar-logo" href="dashboard.html"><div class="topbar-icon">🍽️</div> ComandApp</a>
   <div class="topbar-sep"></div>
-  <button id="theme-toggle" class="theme-toggle" title="Cambiar tema"></button>
-  <button id="pro-toggle"   class="pro-toggle"   title="Modo PRO">PRO</button>
   <div class="topbar-user">Bienvenido, <strong id="topbar-name"></strong></div>
   <div class="topbar-avatar" id="topbar-avatar">D</div>
   <span id="topbar-role" class="topbar-role"></span>
@@ -102,11 +133,11 @@
 <div class="app-body">
   <nav class="sidebar">
     <div class="sidebar-label">Panel</div>
-    <a class="nav-item" href="dashboard.html"><i class="fa-solid fa-house"></i> Inicio</a>
-    <a class="nav-item" href="usuarios.html"><i class="fa-solid fa-users"></i> Usuarios</a>
-    <a class="nav-item" href="mesas.html"><i class="fa-solid fa-chair"></i> Mesas</a>
-    <a class="nav-item" href="menu.html"><i class="fa-solid fa-burger"></i> Menú</a>
-    <a class="nav-item active" href="comandas.html"><i class="fa-solid fa-newspaper"></i> Comandas</a>
+    <a class="nav-item" href="dashboard.html"><span class="ni">🏠</span> Inicio</a>
+    <a class="nav-item" href="usuarios.html"><span class="ni">👥</span> Usuarios</a>
+    <a class="nav-item" href="mesas.html"><span class="ni">🪑</span> Mesas</a>
+    <a class="nav-item" href="menu.html"><span class="ni">🍴</span> Menú</a>
+    <a class="nav-item active" href="comandas.html"><span class="ni">📊</span> Comandas</a>
   </nav>
 
   <main class="main">
@@ -115,14 +146,15 @@
       <button class="btn btn-outline" onclick="recargar()">↺ Actualizar</button>
     </div>
 
-    <!-- Tabs de sección -->
+    <!-- Tabs principales -->
     <div class="section-tabs">
-      <button class="stab active" onclick="cambiarTab('hoy',this)"><i class="fa-solid fa-chart-column"></i> Hoy</button>
-      <button class="stab" onclick="cambiarTab('pago',this)"><i class="fa-solid fa-credit-card"></i> Cobro</button>
-      <button class="stab" onclick="cambiarTab('historico',this)"><i class="fa-solid fa-calendar"></i> Histórico</button>
+      <button class="stab active" onclick="cambiarTab('hoy',this)">📊 Hoy</button>
+      <button class="stab" onclick="cambiarTab('pago',this)">💳 Cobro</button>
+      <button class="stab" onclick="cambiarTab('historico',this)">📅 Histórico</button>
+      <button class="stab" onclick="cambiarTab('estadisticas',this)">📈 Estadísticas</button>
     </div>
 
-    <!-- ════ TAB: HOY ════ -->
+    <!-- ════ HOY ════ -->
     <div id="sec-hoy" class="section active">
       <div class="empleado-top" id="mejor-wrap" style="display:none;">
         <span style="font-size:26px;">🏆</span>
@@ -131,63 +163,33 @@
           <div style="font-size:12px;color:var(--muted);" id="mejor-sub"></div>
         </div>
       </div>
-
       <div class="big-stats">
-        <div class="big-stat destacado">
-          <div class="num" id="hoy-monto">—</div>
-          <div class="lbl">Facturado hoy</div>
-          <div class="sub" id="hoy-cobrado"></div>
-        </div>
-        <div class="big-stat">
-          <div class="num" id="hoy-entregadas">—</div>
-          <div class="lbl">Entregadas</div>
-        </div>
-        <div class="big-stat">
-          <div class="num" id="hoy-activas">—</div>
-          <div class="lbl">Activas ahora</div>
-        </div>
-        <div class="big-stat">
-          <div class="num" id="hoy-rechazadas" style="color:#e57373;">—</div>
-          <div class="lbl">Rechazadas</div>
-        </div>
+        <div class="big-stat destacado"><div class="num" id="hoy-monto">—</div><div class="lbl">Facturado hoy</div><div class="sub" id="hoy-cobrado"></div></div>
+        <div class="big-stat"><div class="num" id="hoy-entregadas">—</div><div class="lbl">Entregadas</div></div>
+        <div class="big-stat"><div class="num" id="hoy-activas">—</div><div class="lbl">Activas ahora</div></div>
+        <div class="big-stat"><div class="num" id="hoy-rechazadas" style="color:#e57373;">—</div><div class="lbl">Rechazadas</div></div>
       </div>
     </div>
 
-    <!-- ════ TAB: COBRO ════ -->
+    <!-- ════ COBRO ════ -->
     <div id="sec-pago" class="section">
-      <div class="page-header" style="margin-bottom:1rem;">
-        <div>
-          <h2 style="font-size:18px;">Cobro de comandas</h2>
-          <p>Marcá las comandas como pagas cuando el cliente abone</p>
-        </div>
-      </div>
-
-      <!-- Filtro por estado -->
       <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;">
-        <button class="btn btn-sm btn-gold"    id="fp-todas"      onclick="setFiltroPago('todas')">Todas</button>
-        <button class="btn btn-sm btn-outline" id="fp-sin-pagar"  onclick="setFiltroPago('sin-pagar')"><i class="fa-solid fa-xmark"></i> Sin pagar</button>
-        <button class="btn btn-sm btn-outline" id="fp-pagas"      onclick="setFiltroPago('pagas')"><i class="fa-solid fa-check"></i> Pagas</button>
+        <button class="btn btn-sm btn-gold"    id="fp-todas"     onclick="setFiltroPago('todas')">Todas</button>
+        <button class="btn btn-sm btn-outline" id="fp-sin-pagar" onclick="setFiltroPago('sin-pagar')">💳 Sin pagar</button>
+        <button class="btn btn-sm btn-outline" id="fp-pagas"     onclick="setFiltroPago('pagas')">✓ Pagas</button>
       </div>
-
       <div class="comandas-pago-grid" id="grid-pago">
-        <div class="empty"><div class="e-icon"><i class="fa-solid fa-credit-card"></i></div><p>Cargando...</p></div>
+        <div class="empty"><div class="e-icon">💳</div><p>Cargando...</p></div>
       </div>
     </div>
 
-    <!-- ════ TAB: HISTÓRICO ════ -->
+    <!-- ════ HISTÓRICO ════ -->
     <div id="sec-historico" class="section">
       <div class="filtro-bar">
-        <div>
-          <label>Desde</label>
-          <input type="date" id="f-desde" />
-        </div>
-        <div>
-          <label>Hasta</label>
-          <input type="date" id="f-hasta" />
-        </div>
+        <div><label>Desde</label><input type="date" id="h-desde" /></div>
+        <div><label>Hasta</label><input type="date" id="h-hasta" /></div>
         <button class="btn btn-gold btn-sm" onclick="cargarHistorico()">Consultar</button>
       </div>
-
       <div id="hist-totales" style="display:none;">
         <div class="stats-row" style="margin-bottom:1.25rem;">
           <div class="stat-card"><div class="num" id="h-total">0</div><div class="lbl">Total</div></div>
@@ -196,7 +198,6 @@
           <div class="stat-card"><div class="num" id="h-monto">$0</div><div class="lbl">Facturado</div></div>
           <div class="stat-card"><div class="num" id="h-cobrado">$0</div><div class="lbl">Cobrado</div></div>
         </div>
-
         <div class="hist-cols">
           <div>
             <div class="card-title" style="font-size:13px;margin-bottom:.75rem;">📆 Por día</div>
@@ -213,37 +214,82 @@
           </div>
         </div>
       </div>
-
       <div id="hist-empty" style="text-align:center;padding:2rem;color:var(--muted);font-size:13px;">
         Seleccioná un rango de fechas y consultá
       </div>
     </div>
+
+    <!-- ════ ESTADÍSTICAS ════ -->
+    <div id="sec-estadisticas" class="section">
+
+      <!-- Filtro de fechas compartido para estadísticas -->
+      <div class="filtro-bar">
+        <div><label>Desde</label><input type="date" id="e-desde" /></div>
+        <div><label>Hasta</label><input type="date" id="e-hasta" /></div>
+        <button class="btn btn-gold btn-sm" onclick="cargarEstadisticas()">Consultar</button>
+      </div>
+
+      <!-- Sub-tabs -->
+      <div class="sub-tabs">
+        <button class="subtab active" onclick="cambiarSubTab('mozos',this)">🧍 Mozos</button>
+        <button class="subtab" onclick="cambiarSubTab('cocina',this)">👨‍🍳 Cocina</button>
+        <button class="subtab" onclick="cambiarSubTab('productos',this)">🍴 Productos</button>
+      </div>
+
+      <!-- SUB: MOZOS -->
+      <div id="subsec-mozos" class="subsection active">
+        <div id="mozos-content">
+          <div class="empty"><div class="e-icon">🧍</div><p>Consultá un período para ver las estadísticas</p></div>
+        </div>
+      </div>
+
+      <!-- SUB: COCINA -->
+      <div id="subsec-cocina" class="subsection">
+        <div id="cocina-content">
+          <div class="empty"><div class="e-icon">👨‍🍳</div><p>Consultá un período para ver las estadísticas</p></div>
+        </div>
+      </div>
+
+      <!-- SUB: PRODUCTOS -->
+      <div id="subsec-productos" class="subsection">
+        <div id="productos-content">
+          <div class="empty"><div class="e-icon">🍴</div><p>Consultá un período para ver las estadísticas</p></div>
+        </div>
+      </div>
+
+    </div><!-- /sec-estadisticas -->
 
   </main>
 </div>
 
 <div id="toast" class="toast"></div>
 <script src="../js/api.js"></script>
-<script src="../js/theme.js"></script>
 <script>
 requireAuth(['owner']); setupTopbar();
 
-const hoy = new Date().toISOString().slice(0,10);
+const hoy  = new Date().toISOString().slice(0,10);
+const hace7 = new Date(Date.now()-7*86400000).toISOString().slice(0,10);
 document.getElementById('fecha-hoy').textContent =
   new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-document.getElementById('f-desde').value = new Date(Date.now()-7*86400000).toISOString().slice(0,10);
-document.getElementById('f-hasta').value = hoy;
 
-let _comandasPago = [];
-let _filtroPago   = 'todas';
+// Defaults de filtros
+['h-desde','e-desde'].forEach(id => document.getElementById(id).value = hace7);
+['h-hasta','e-hasta'].forEach(id => document.getElementById(id).value = hoy);
 
-// ── Tabs ────────────────────────────────────────────────
+// ── TABS ────────────────────────────────────────────────
 function cambiarTab(id, btn) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.stab').forEach(b => b.classList.remove('active'));
   document.getElementById('sec-' + id).classList.add('active');
   btn.classList.add('active');
   if (id === 'pago') cargarPago();
+}
+
+function cambiarSubTab(id, btn) {
+  document.querySelectorAll('.subsection').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.subtab').forEach(b => b.classList.remove('active'));
+  document.getElementById('subsec-' + id).classList.add('active');
+  btn.classList.add('active');
 }
 
 function recargar() {
@@ -264,37 +310,25 @@ async function cargarHoy() {
       document.getElementById('mejor-nombre').textContent =
         `${s.mejor_empleado.nombre} ${s.mejor_empleado.apellido}`;
       document.getElementById('mejor-sub').textContent =
-        `Mejor empleado del día · ${s.mejor_empleado.total} comanda(s)`;
+        `Mejor mozo del día · ${s.mejor_empleado.total} comanda(s)`;
       document.getElementById('mejor-wrap').style.display = 'flex';
     }
   } catch(e) { toast(e.message,'error'); }
 }
 
 // ── COBRO ────────────────────────────────────────────────
+let _comandasPago = []; let _filtroPago = 'todas';
+
 async function cargarPago() {
   try {
-    // Trae todas las activas + las entregadas de hoy para poder marcarlas
-    const [activas, entregadas] = await Promise.all([
-      apiFetch('/comandas'),
-      apiFetch(`/comandas/stats/hoy`) // solo para saber si hay entregadas
-    ]);
-    // Pedimos también las entregadas de hoy
     _comandasPago = await apiFetch('/comandas/todas-hoy');
     renderGridPago();
-  } catch(e) {
-    // Fallback: solo muestra las activas
-    try {
-      _comandasPago = await apiFetch('/comandas');
-      renderGridPago();
-    } catch(e2) { toast(e2.message,'error'); }
-  }
+  } catch(e) { toast(e.message,'error'); }
 }
 
 function setFiltroPago(f) {
   _filtroPago = f;
-  document.querySelectorAll('[id^="fp-"]').forEach(b => {
-    b.classList.remove('btn-gold'); b.classList.add('btn-outline');
-  });
+  document.querySelectorAll('[id^="fp-"]').forEach(b => { b.classList.remove('btn-gold'); b.classList.add('btn-outline'); });
   const ids = { todas:'fp-todas', 'sin-pagar':'fp-sin-pagar', pagas:'fp-pagas' };
   document.getElementById(ids[f]).classList.replace('btn-outline','btn-gold');
   renderGridPago();
@@ -304,28 +338,21 @@ function renderGridPago() {
   let data = _comandasPago;
   if (_filtroPago === 'sin-pagar') data = data.filter(c => !c.pagada);
   if (_filtroPago === 'pagas')     data = data.filter(c =>  c.pagada);
-
   const grid = document.getElementById('grid-pago');
-  if (!data.length) {
-    grid.innerHTML = `<div class="empty"><div class="e-icon">💳</div><p>Sin comandas para este filtro</p></div>`;
-    return;
-  }
-
+  if (!data.length) { grid.innerHTML = `<div class="empty"><div class="e-icon">💳</div><p>Sin comandas para este filtro</p></div>`; return; }
   grid.innerHTML = data.map(c => `
     <div class="cpago-card">
       <div class="cpago-header">
-        <span class="cpago-mesa">Mesa ${c.mesa_numero || '—'}</span>
+        <span class="cpago-mesa">Mesa ${c.mesa_numero||'—'}</span>
         ${estadoBadge(c.estado)}
       </div>
-      <div class="cpago-mozo">🧍 ${c.mozo_nombre || '—'} ${c.mozo_apellido || ''} · ${tiempoRelativo(c.creado_en)}</div>
-      <div class="cpago-items">
-        ${(c.items||[]).map(i=>`${i.cantidad}× ${i.producto}`).join(' · ')}
-      </div>
+      <div class="cpago-mozo">🧍 ${c.mozo_nombre||'—'} ${c.mozo_apellido||''} · ${tiempoRelativo(c.creado_en)}</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:.4rem;">${(c.items||[]).map(i=>`${i.cantidad}× ${i.producto}`).join(' · ')}</div>
       ${c.observaciones ? `<div style="font-size:11px;color:var(--muted);font-style:italic;margin-bottom:.4rem;">📝 ${c.observaciones}</div>` : ''}
       <div class="cpago-footer">
         <span class="cpago-total">${formatPrecio(c.total)}</span>
-        <button class="paga-toggle ${c.pagada?'paga':'no-paga'}" onclick="togglePagar(${c.id}, ${!c.pagada})">
-          💳 ${c.pagada ? 'Paga ✓' : 'Sin pagar'}
+        <button class="paga-toggle ${c.pagada?'paga':'no-paga'}" onclick="togglePagar(${c.id},${!c.pagada})">
+          💳 ${c.pagada?'Paga ✓':'Sin pagar'}
         </button>
       </div>
     </div>
@@ -344,33 +371,26 @@ async function togglePagar(id, nuevoPagada) {
 
 // ── HISTÓRICO ────────────────────────────────────────────
 async function cargarHistorico() {
-  const desde = document.getElementById('f-desde').value;
-  const hasta = document.getElementById('f-hasta').value;
+  const desde = document.getElementById('h-desde').value;
+  const hasta = document.getElementById('h-hasta').value;
   if (!desde || !hasta) { toast('Seleccioná desde y hasta','error'); return; }
-
   try {
     const d = await apiFetch(`/comandas/stats/historico?desde=${desde}&hasta=${hasta}`);
-
     document.getElementById('h-total').textContent      = d.totales.total;
     document.getElementById('h-entregadas').textContent = d.totales.entregadas;
     document.getElementById('h-rechazadas').textContent = d.totales.rechazadas;
     document.getElementById('h-monto').textContent      = formatPrecio(d.totales.monto_total);
     document.getElementById('h-cobrado').textContent    = formatPrecio(d.totales.monto_cobrado);
-
-    const tbody = document.getElementById('hist-tbody');
-    tbody.innerHTML = !d.por_dia.length
+    document.getElementById('hist-tbody').innerHTML = !d.por_dia.length
       ? '<tr><td colspan="5" style="color:var(--muted);padding:.75rem;">Sin datos</td></tr>'
       : d.por_dia.map(r => `
           <tr>
-            <td>${r.fecha ? String(r.fecha).slice(8,10)+'/'+String(r.fecha).slice(5,7) : '—'}</td>
-            <td>${r.total}</td>
-            <td>${r.entregadas}</td>
+            <td>${new Date(r.fecha).toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',timeZone:'UTC'})}</td>
+            <td>${r.total}</td><td>${r.entregadas}</td>
             <td style="color:#e57373;">${r.rechazadas}</td>
             <td style="color:var(--gold-light);">${formatPrecio(r.monto)}</td>
           </tr>`).join('');
-
-    const lista = document.getElementById('ranking-lista');
-    lista.innerHTML = !d.empleados.length
+    document.getElementById('ranking-lista').innerHTML = !d.empleados.length
       ? '<li style="color:var(--muted);font-size:13px;padding:.5rem 0;">Sin datos</li>'
       : d.empleados.map((e,i) => `
           <li class="ranking-item">
@@ -379,12 +399,180 @@ async function cargarHistorico() {
             <span class="rank-total">${e.total} cmd</span>
             <span class="rank-monto">${formatPrecio(e.monto)}</span>
           </li>`).join('');
-
     document.getElementById('hist-totales').style.display = 'block';
     document.getElementById('hist-empty').style.display   = 'none';
   } catch(e) { toast(e.message,'error'); }
 }
 
+// ── ESTADÍSTICAS ─────────────────────────────────────────
+async function cargarEstadisticas() {
+  const desde = document.getElementById('e-desde').value;
+  const hasta = document.getElementById('e-hasta').value;
+  if (!desde || !hasta) { toast('Seleccioná desde y hasta','error'); return; }
+
+  try {
+    // Los tres fetches en paralelo
+    const [dataMozos, dataCocina, dataProductos] = await Promise.all([
+      apiFetch(`/comandas/stats/mozos?desde=${desde}&hasta=${hasta}`),
+      apiFetch(`/comandas/stats/cocina?desde=${desde}&hasta=${hasta}`),
+      apiFetch(`/menu/stats/productos?desde=${desde}&hasta=${hasta}`)
+    ]);
+
+    renderMozos(dataMozos);
+    renderCocina(dataCocina);
+    renderProductos(dataProductos);
+  } catch(e) { toast(e.message,'error'); }
+}
+
+// ── RENDER MOZOS ─────────────────────────────────────────
+function renderMozos(data) {
+  const el = document.getElementById('mozos-content');
+  if (!data.mozos.length) {
+    el.innerHTML = '<div class="empty"><div class="e-icon">🧍</div><p>Sin datos de mozos en este período</p></div>';
+    return;
+  }
+  el.innerHTML = data.mozos.map((m, i) => {
+    const tasa  = parseFloat(m.tasa_exito);
+    const tasaCls = tasa >= 90 ? 'tasa-alta' : tasa >= 70 ? 'tasa-media' : 'tasa-baja';
+    return `
+      <div class="mozo-card">
+        <div class="mozo-card-header">
+          <div>
+            <div class="mozo-nombre">${i===0?'🥇 ':''}${m.nombre} ${m.apellido}</div>
+          </div>
+          <span class="tasa-badge ${tasaCls}">✓ ${tasa}% efectividad</span>
+        </div>
+        <div class="mozo-stats-grid">
+          <div class="mstat"><div class="n">${m.total_comandas}</div><div class="l">Comandas totales</div></div>
+          <div class="mstat"><div class="n">${m.entregadas}</div><div class="l">Entregadas</div></div>
+          <div class="mstat"><div class="n" style="color:#e57373;">${m.rechazadas}</div><div class="l">Rechazadas</div></div>
+          <div class="mstat"><div class="n">${m.activas}</div><div class="l">Activas</div></div>
+          <div class="mstat"><div class="n">${formatPrecio(m.monto_total)}</div><div class="l">Total facturado</div></div>
+          <div class="mstat"><div class="n">${formatPrecio(m.promedio_comanda)}</div><div class="l">Promedio/comanda</div></div>
+          <div class="mstat"><div class="n">${formatPrecio(m.monto_cobrado)}</div><div class="l">Cobrado</div></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── RENDER COCINA ─────────────────────────────────────────
+function renderCocina(data) {
+  const t  = data.tiempos;
+  const el = document.getElementById('cocina-content');
+
+  const fmtMin = (v) => v === null || v === undefined ? '—' : `${v} min`;
+
+  // Tabla por día
+  const filaDia = !data.por_dia.length
+    ? '<tr><td colspan="3" style="color:var(--muted);padding:.75rem;">Sin datos</td></tr>'
+    : data.por_dia.map(r => `
+        <tr>
+          <td>${new Date(r.fecha).toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',timeZone:'UTC'})}</td>
+          <td>${r.procesadas}</td>
+          <td>${fmtMin(r.avg_min_total)}</td>
+        </tr>`).join('');
+
+  el.innerHTML = `
+    <!-- Tarjetas de tiempo -->
+    <div class="tiempo-grid">
+      <div class="tcard">
+        <div class="n">${fmtMin(t.avg_min_respuesta)}</div>
+        <div class="l">Promedio respuesta<br><span style="font-size:10px;">(llegada → aceptar)</span></div>
+      </div>
+      <div class="tcard">
+        <div class="n">${fmtMin(t.avg_min_preparacion)}</div>
+        <div class="l">Promedio preparación<br><span style="font-size:10px;">(aceptar → lista)</span></div>
+      </div>
+      <div class="tcard">
+        <div class="n" style="color:${parseFloat(t.avg_min_total)>20?'#e57373':'var(--gold-light)'};">
+          ${fmtMin(t.avg_min_total)}
+        </div>
+        <div class="l">Promedio total<br><span style="font-size:10px;">(llegada → lista)</span></div>
+      </div>
+      <div class="tcard">
+        <div class="n">${fmtMin(t.min_min_total)}</div>
+        <div class="l">Tiempo mínimo</div>
+      </div>
+      <div class="tcard">
+        <div class="n" style="color:#e57373;">${fmtMin(t.max_min_total)}</div>
+        <div class="l">Tiempo máximo</div>
+      </div>
+      <div class="tcard">
+        <div class="n">${t.total_procesadas || 0}</div>
+        <div class="l">Comandas procesadas</div>
+      </div>
+    </div>
+
+    <div class="card-title" style="font-size:13px;margin-bottom:.75rem;">📆 Tiempos por día</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Fecha</th><th>Procesadas</th><th>Tiempo promedio</th></tr></thead>
+        <tbody>${filaDia}</tbody>
+      </table>
+    </div>
+
+    ${parseFloat(t.avg_min_total) > 20 ? `
+      <div style="margin-top:1rem;padding:.75rem 1rem;background:rgba(192,57,43,.1);
+                  border:1px solid rgba(192,57,43,.25);border-radius:8px;font-size:13px;color:#e57373;">
+        ⚠️ El tiempo promedio supera los 20 minutos. Puede afectar la experiencia del cliente.
+      </div>` : ''}
+  `;
+}
+
+// ── RENDER PRODUCTOS ─────────────────────────────────────
+function renderProductos(data) {
+  const el   = document.getElementById('productos-content');
+  const pros  = data.productos;
+  if (!pros.length) {
+    el.innerHTML = '<div class="empty"><div class="e-icon">🍴</div><p>Sin datos de productos</p></div>';
+    return;
+  }
+
+  const maxVendidos = Math.max(...pros.map(p => parseInt(p.unidades_vendidas)), 1);
+  const conVentas   = pros.filter(p => parseInt(p.unidades_vendidas) > 0);
+  const sinVentas   = pros.filter(p => parseInt(p.unidades_vendidas) === 0);
+
+  const barras = (lista) => lista.map(p => `
+    <div class="prod-bar-wrap">
+      <div class="prod-bar-header">
+        <span class="prod-bar-nombre">
+          ${p.nombre}
+          ${!p.disponible ? `<span style="color:#e57373;font-size:10px;"> (no disp.)</span>` : ''}
+        </span>
+        <span class="prod-bar-val">${p.unidades_vendidas} ud · ${formatPrecio(p.monto_total)}</span>
+      </div>
+      <div class="prod-bar-cat">${p.categoria}</div>
+      <div class="prod-bar-bg" style="margin-top:.3rem;">
+        <div class="prod-bar-fill" style="width:${Math.round(parseInt(p.unidades_vendidas)/maxVendidos*100)}%;"></div>
+      </div>
+    </div>
+  `).join('');
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;">
+      <div>
+        <div class="card-title" style="font-size:13px;margin-bottom:.85rem;">🔝 Más vendidos</div>
+        ${barras(conVentas.slice(0, 10))}
+        ${!conVentas.length ? '<p style="color:var(--muted);font-size:13px;">Sin ventas en el período</p>' : ''}
+      </div>
+      <div>
+        <div class="card-title" style="font-size:13px;margin-bottom:.85rem;">📉 Sin ventas en el período</div>
+        ${sinVentas.length
+          ? sinVentas.map(p => `
+              <div style="display:flex;align-items:center;justify-content:space-between;
+                          padding:.45rem .5rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px;">
+                <span>${p.nombre}</span>
+                <span style="font-size:11px;color:var(--muted);">${p.categoria}</span>
+              </div>`).join('')
+          : '<p style="color:var(--muted);font-size:13px;">Todos los productos tuvieron ventas 🎉</p>'
+        }
+      </div>
+    </div>
+  `;
+}
+
+// ── INIT ─────────────────────────────────────────────────
 cargarHoy();
 </script>
 </body>
